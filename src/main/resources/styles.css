@@ -1,0 +1,55 @@
+/* Dark Mode Theme */
+.root {
+    -fx-base: #0f0f13; /* bg-main */
+    -fx-background-color: #0f0f13;
+    -fx-font-family: 'Segoe UI', sans-serif;
+}
+
+.label {
+    -fx-text-fill: white;
+}
+
+.button {
+    -fx-background-color: #3f3f46;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #52525b;
+}
+
+.text-field {
+    -fx-background-color: #202025; /* bg-panel */
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #a1a1aa;
+}
+
+.table-view {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a1a1aa;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: rgba(255,255,255,0.02);
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(139, 92, 246, 0.2); /* primary with opacity */
+}

@@ -194,3 +194,50 @@ ipcMain.handle('library-get-all', () => {
     const stmt = db.prepare('SELECT * FROM tracks ORDER BY artist, album, title');
     return stmt.all();
 });
+
+// FR-6: Playlist Management
+ipcMain.handle('playlist-create', (event, { name }) => {
+    const id = uuidv4();
+    // For now assuming single user or default user
+    const insert = db.prepare('INSERT INTO playlists (id, name) VALUES (?, ?)');
+    try {
+        insert.run(id, name);
+        return { success: true, playlistId: id, name };
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+});
+
+ipcMain.handle('playlist-get-all', () => {
+    const stmt = db.prepare('SELECT * FROM playlists ORDER BY name');
+    return stmt.all();
+});
+
+ipcMain.handle('playlist-add-track', (event, { playlistId, trackId }) => {
+    // Get current max order index
+    const maxOrderStmt = db.prepare('SELECT MAX(order_index) as max_order FROM playlist_tracks WHERE playlist_id = ?');
+    const result = maxOrderStmt.get(playlistId) as any;
+    const nextOrder = (result.max_order || 0) + 1;
+    
+    const insert = db.prepare('INSERT INTO playlist_tracks (playlist_id, track_id, order_index) VALUES (?, ?, ?)');
+    try {
+        insert.run(playlistId, trackId, nextOrder);
+        return { success: true };
+    } catch (e: any) {
+        // If unique constraint violation (already in playlist), might want to allow duplicates or not. 
+        // Logic says "save the current song to it", usually implies linking.
+        // If primary key is (playlist_id, track_id), then no duplicates.
+        return { success: false, error: e.message };
+    }
+});
+
+ipcMain.handle('playlist-get-tracks', (event, { playlistId }) => {
+    const stmt = db.prepare(`
+        SELECT t.* 
+        FROM tracks t
+        JOIN playlist_tracks pt ON t.id = pt.track_id
+        WHERE pt.playlist_id = ?
+        ORDER BY pt.order_index
+    `);
+    return stmt.all(playlistId);
+});

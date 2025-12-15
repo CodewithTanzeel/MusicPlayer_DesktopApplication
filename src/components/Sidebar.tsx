@@ -1,5 +1,7 @@
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Home, LayoutList, Library, PlusCircle, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowRight, LayoutList, Library, PlusCircle, Search } from 'lucide-react';
+
+const { ipcRenderer } = window.require('electron');
 
 interface SidebarProps {
   currentView: string;
@@ -7,7 +9,17 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ currentView, onChangeView }: SidebarProps) => {
-  const navigate = useNavigate();
+
+  const [playlists, setPlaylists] = useState<{ id: string, name: string }[]>([]);
+
+  useEffect(() => {
+    fetchPlaylists();
+  }, [currentView]); // Re-fetch when view changes (e.g. after creation)
+
+  const fetchPlaylists = async () => {
+    const pl = await ipcRenderer.invoke('playlist-get-all');
+    setPlaylists(pl);
+  };
 
   const navItems = [
     { id: 'library', label: 'Library', icon: Library },
@@ -35,11 +47,10 @@ export const Sidebar = ({ currentView, onChangeView }: SidebarProps) => {
             <button
               key={item.id}
               onClick={() => onChangeView(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                isActive 
-                  ? 'bg-violet-500/10 text-violet-400' 
-                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
-              }`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
+                ? 'bg-violet-500/10 text-violet-400'
+                : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
+                }`}
             >
               <Icon size={20} />
               {item.label}
@@ -59,13 +70,20 @@ export const Sidebar = ({ currentView, onChangeView }: SidebarProps) => {
           </button>
         </div>
         <div className="space-y-1">
-            {/* Placeholder Playlists */}
-            <div className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 cursor-pointer rounded hover:bg-white/5">
-                Favorites
+          {playlists.map(p => (
+            <div
+              key={p.id}
+              onClick={() => onChangeView(`playlist:${p.id}`)}
+              className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 cursor-pointer rounded hover:bg-white/5 truncate"
+            >
+              {p.name}
             </div>
-            <div className="px-3 py-2 text-sm text-zinc-400 hover:text-zinc-100 cursor-pointer rounded hover:bg-white/5">
-                Late Night Vibe
+          ))}
+          {playlists.length === 0 && (
+            <div className="px-3 py-2 text-sm text-zinc-600 italic">
+              No playlists
             </div>
+          )}
         </div>
       </div>
     </div>

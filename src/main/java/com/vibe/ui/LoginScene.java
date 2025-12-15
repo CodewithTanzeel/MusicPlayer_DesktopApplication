@@ -17,7 +17,7 @@ public class LoginScene {
 
     public Parent getView(Stage stage) {
         BorderPane root = new BorderPane();
-        
+
         // Custom Title Bar
         root.setTop(new WindowControls(stage));
 
@@ -26,7 +26,8 @@ public class LoginScene {
         layout.setStyle("-fx-padding: 50;");
 
         Label title = new Label("Vibe");
-        title.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: linear-gradient(to right, #a78bfa, #f472b6);");
+        title.setStyle(
+                "-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: linear-gradient(to right, #a78bfa, #f472b6);");
 
         TextField usernameInput = new TextField();
         usernameInput.setPromptText("Username");
@@ -42,7 +43,15 @@ public class LoginScene {
         Button loginBtn = new Button("Log In");
         loginBtn.setMaxWidth(300);
         loginBtn.setOnAction(e -> {
-            boolean success = DatabaseManager.loginUser(usernameInput.getText(), passwordInput.getText());
+            String user = usernameInput.getText().trim();
+            String pass = passwordInput.getText().trim();
+
+            if (user.isEmpty() || pass.isEmpty()) {
+                errorLabel.setText("Please enter username and password");
+                return;
+            }
+
+            boolean success = DatabaseManager.loginUser(user, pass);
             if (success) {
                 MainScene mainScene = new MainScene();
                 Main.setScene(new Scene(mainScene.getView(Main.getStage()), 1280, 800));
@@ -55,7 +64,16 @@ public class LoginScene {
         registerBtn.setMaxWidth(300);
         registerBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #a78bfa;");
         registerBtn.setOnAction(e -> {
-            boolean success = DatabaseManager.registerUser(usernameInput.getText(), passwordInput.getText());
+            String user = usernameInput.getText().trim();
+            String pass = passwordInput.getText().trim();
+
+            if (user.isEmpty() || pass.isEmpty()) {
+                errorLabel.setText("Username and password cannot be empty");
+                errorLabel.setStyle("-fx-text-fill: red;");
+                return;
+            }
+
+            boolean success = DatabaseManager.registerUser(user, pass);
             if (success) {
                 errorLabel.setText("Registered! Please login.");
                 errorLabel.setStyle("-fx-text-fill: green;");
@@ -66,7 +84,7 @@ public class LoginScene {
         });
 
         layout.getChildren().addAll(title, usernameInput, passwordInput, loginBtn, registerBtn, errorLabel);
-        
+
         root.setCenter(layout);
         return root;
     }

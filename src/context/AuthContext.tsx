@@ -3,12 +3,12 @@ import { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
-  login: (u: string, p: string) => Promise<{success: boolean; error?: string}>;
-  register: (u: string, p: string) => Promise<{success: boolean; error?: string}>;
+  login: (u: string, p: string) => Promise<{ success: boolean; error?: string }>;
+  register: (u: string, p: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -19,26 +19,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (u: string, p: string) => {
     try {
-        const res = await ipcRenderer.invoke('auth-login', { username: u, password: p });
-        if (res.success) {
-            setUser(res.user);
-        }
-        return res;
+      const res = await ipcRenderer.invoke('auth-login', { username: u, password: p });
+      if (res.success) {
+        setUser(res.user);
+      }
+      return res;
     } catch (e: any) {
-        return { success: false, error: e.message };
+      return { success: false, error: e.message };
     }
   };
 
   const register = async (u: string, p: string) => {
-      try {
-        const res = await ipcRenderer.invoke('auth-register', { username: u, password: p });
-        if (res.success) {
-            setUser(res.user);
-        }
-        return res;
-      } catch (e: any) {
-          return { success: false, error: e.message };
+    try {
+      const res = await ipcRenderer.invoke('auth-register', { username: u, password: p });
+      if (res.success) {
+        setUser(res.user);
       }
+      return res;
+    } catch (e: any) {
+      return { success: false, error: e.message };
+    }
   };
 
   const logout = () => {

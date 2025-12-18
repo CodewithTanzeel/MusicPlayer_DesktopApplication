@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePlayer } from '../context/PlayerContext';
 import { Track } from '../types';
-import { Clock, Music, Play, MoreHorizontal, Plus, List } from 'lucide-react';
+import { Clock, Music, Play, MoreHorizontal, Plus, List, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { formatTime } from '../utils/time';
 
 const { ipcRenderer } = window.require('electron');
@@ -21,6 +21,24 @@ export const LibraryView = () => {
     const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
     const [playlists, setPlaylists] = useState<{ id: string, name: string }[]>([]);
     const [newPlaylistName, setNewPlaylistName] = useState('');
+
+    // Playlist dropdown UI (moved back to Library)
+    const [playlistOpen, setPlaylistOpen] = useState(false);
+    const [playlistSearch, setPlaylistSearch] = useState('');
+    const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
+    const [playlistTracksMap, setPlaylistTracksMap] = useState<Record<string, Track[]>>({});
+
+    const loadPlaylistsList = async () => {
+        const pl = await ipcRenderer.invoke('playlist-get-all');
+        setPlaylists(pl);
+    };
+
+    const loadPlaylistTracks = async (id: string) => {
+        if (playlistTracksMap[id]) return; // already loaded
+        const t: Track[] = await ipcRenderer.invoke('playlist-get-tracks', { playlistId: id });
+        setPlaylistTracksMap(prev => ({ ...prev, [id]: t }));
+    };
+
 
     const toggleContextMenu = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
@@ -46,9 +64,18 @@ export const LibraryView = () => {
         // 1. Create Playlist
         const res = await ipcRenderer.invoke('playlist-create', { name: newPlaylistName });
         if (res.success) {
-            // 2. Add current track to it (we need to know which track triggered this)
-            // Wait, we lost the track ID when we closed the context menu.
-            // We need to store 'selectedTrack' state.
+            // If this modal was opened from a track context menu, add that track
+            if (contextMenuTrackId) {
+                await ipcRenderer.invoke('playlist-add-track', {
+                    playlistId: res.playlist.id || res.id || null,
+                    trackId: contextMenuTrackId
+                });
+            }
+
+            // Refresh playlists shown in the dropdown
+            await loadPlaylistsList();
+            setNewPlaylistName('');
+            setShowCreatePlaylist(false);
         }
     };
 
@@ -199,6 +226,120 @@ export const LibraryView = () => {
                     <div className="text-zinc-400 mb-4">Your library is empty.</div>
                 </div>
             )}
+
+            {/* Playlists Dropdown (moved into Library) */}
+            <div className="mt-8 px-4">
+                <div className="w-full flex items-center justify-between bg-zinc-900/40 px-4 py-3 rounded hover:bg-zinc-900 transition-colors">
+                    <button
+                        className="flex items-center gap-3 text-left"
+                        onClick={async () => {
+                            const next = !playlistOpen;
+                            setPlaylistOpen(next);
+                            if (next) await loadPlaylistsList();
+                        }}
+                    >
+                        <List size={16} />
+                        <span className="font-medium text-white ml-2">Playlists</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            className="text-zinc-400 hover:text-white p-1 rounded"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowCreatePlaylist(true);
+                            }}
+                            title="Create Playlist"
+                        >
+                            <Plus size={16} />
+                        </button>
+                        <button
+                            className={`transform transition-transform duration-150 ${playlistOpen ? 'rotate-180' : ''}`}
+                            onClick={async (e) => {
+                                e.stopPropagation();
+                                const next = !playlistOpen;
+                                setPlaylistOpen(next);
+                                if (next) await loadPlaylistsList();
+                            }}
+                        >
+                            <ChevronDown size={18} />
+                        </button>
+                    </div>
+                </div> 
+
+                {playlistOpen && (
+                    <div className="mt-3 bg-zinc-900/30 border border-white/5 rounded p-3">
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Search Playlists..."
+                                    className="w-full pl-9 pr-3"
+                                    value={playlistSearch}
+                                    onChange={(e) => setPlaylistSearch(e.target.value)}
+                                />
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none">
+                                    <Search size={14} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="playlist-dropdown max-h-80 overflow-y-auto custom-scrollbar">
+                            {playlists.filter(p => p.name.toLowerCase().includes(playlistSearch.toLowerCase())).map(p => (
+                                <div key={p.id} className="mb-2">
+                                    <div className="flex items-center justify-between px-3 py-2 rounded hover:bg-zinc-800/60 cursor-pointer" onClick={async () => {
+                                        const expanding = expandedPlaylistId === p.id ? null : p.id;
+                                        setExpandedPlaylistId(expanding);
+                                        if (expanding) await loadPlaylistTracks(p.id);
+                                    }}>
+                                        <div className="flex items-center gap-3">
+                                            <Music size={16} />
+                                            <span className="font-medium text-white truncate">{p.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-zinc-400">
+                                            <span className="text-sm">{playlistTracksMap[p.id]?.length ?? '-'}</span>
+                                            <ChevronRight size={16} className={`transform ${expandedPlaylistId === p.id ? 'rotate-90' : ''} transition-transform duration-150`} />
+                                        </div>
+                                    </div>
+
+                                    {expandedPlaylistId === p.id && (
+                                        <div className="mt-2 ml-6">
+                                            {(!playlistTracksMap[p.id] || playlistTracksMap[p.id].length === 0) ? (
+                                                <div className="text-zinc-500 text-sm py-2">No songs in this playlist.</div>
+                                            ) : (
+                                                playlistTracksMap[p.id].map((t, i) => (
+                                                    <div key={`${p.id}-${t.id}-${i}`} className="flex items-center justify-between px-3 py-2 rounded hover:bg-white/5 transition-colors">
+                                                        <div className="flex items-center gap-3 truncate">
+                                                            <div className="w-8 h-8 bg-zinc-800 rounded flex items-center justify-center text-zinc-500">
+                                                                <Music size={14} />
+                                                            </div>
+                                                            <div className="truncate text-sm">
+                                                                <div className="truncate font-medium">{t.title}</div>
+                                                                <div className="text-xs text-zinc-500 truncate">{t.artist}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm text-zinc-500 flex items-center gap-2">
+                                                            <div className="text-xs text-zinc-400">{formatTime(t.duration)}</div>
+                                                            <button className="text-zinc-400 hover:text-white" onClick={() => playTrack(t, playlistTracksMap[p.id] ?? [])}>
+                                                                <Play size={14} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {playlists.length === 0 && (
+                                <div className="text-zinc-500 px-3 py-2">No playlists found.</div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+
 
 
             {/* Modals */}

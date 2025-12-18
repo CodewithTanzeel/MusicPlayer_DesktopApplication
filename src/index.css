@@ -135,3 +135,48 @@ input[type=range]::-webkit-slider-runnable-track {
 input[type=range]:focus::-webkit-slider-runnable-track {
   background: var(--primary);
 }
+
+/* Playlist dropdown scroll & auto-hide scrollbar */
+.playlist-dropdown {
+  scrollbar-width: thin;
+}
+
+.playlist-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.playlist-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.playlist-dropdown::-webkit-scrollbar-thumb {
+  background: rgba(63,63,70,0);
+  border-radius: 6px;
+  transition: background 180ms ease, opacity 180ms ease;
+  opacity: 0;
+}
+
+.playlist-dropdown:hover::-webkit-scrollbar-thumb {
+  background: rgba(63,63,70,0.85);
+  opacity: 1;
+}
+
+/* Firefox */
+.playlist-dropdown {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(63,63,70,0.85) transparent;
+}
+
+/* Small utility to fade chevron when rotating */
+.rotate-90 {
+  transform: rotate(90deg);
+  transform-origin: center;
+  transition: transform 150ms ease;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+  transform-origin: center;
+  transition: transform 150ms ease;
+}
+

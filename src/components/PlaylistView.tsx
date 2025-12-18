@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePlayer } from '../context/PlayerContext';
 import { Track } from '../types';
-import { Clock, Music, Play, ArrowLeft } from 'lucide-react';
+import { Clock, Music, Play, ArrowLeft, ChevronDown } from 'lucide-react';
 import { formatTime } from '../utils/time';
 
 const { ipcRenderer } = window.require('electron');
@@ -16,6 +16,9 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
     const [tracks, setTracks] = useState<Track[]>([]);
     const [loading, setLoading] = useState(false);
     const [playlistName, setPlaylistName] = useState('');
+    const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
+    const [playlistTracksMap, setPlaylistTracksMap] = useState<Record<string, Track[]>>({});
+    const [loadingPlaylistId, setLoadingPlaylistId] = useState<string | null>(null);
     const { playTrack, currentTrack } = usePlayer();
 
     useEffect(() => {
@@ -46,6 +49,21 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
         setLoading(false);
     };
 
+    const togglePlaylist = async (id: string) => {
+        console.log('toggle playlist', id);
+        if (expandedPlaylistId === id) {
+            setExpandedPlaylistId(null);
+            return;
+        }
+        if (!playlistTracksMap[id]) {
+            setLoadingPlaylistId(id);
+            const t = await ipcRenderer.invoke('playlist-get-tracks', { playlistId: id });
+            setPlaylistTracksMap(prev => ({ ...prev, [id]: t }));
+            setLoadingPlaylistId(null);
+        }
+        setExpandedPlaylistId(id);
+    }; 
+
     if (!playlistId) {
         return (
             <div className="p-8">
@@ -55,16 +73,67 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {playlists.map(p => (
-                            <div
-                                key={p.id}
-                                onClick={() => onNavigate(`playlist:${p.id}`)}
-                                className="bg-zinc-800/50 hover:bg-zinc-800 p-6 rounded-lg cursor-pointer transition-all hover:scale-105 group"
-                            >
-                                <div className="w-full aspect-square bg-zinc-700/50 rounded-md mb-4 flex items-center justify-center">
-                                    <Music size={48} className="text-zinc-600 group-hover:text-primary transition-colors" />
+                            <div key={p.id} className="col-span-1 w-full">
+                                <div
+                                    onClick={() => togglePlaylist(p.id)}
+                                    className={`bg-zinc-800/50 p-6 rounded-lg cursor-pointer transition-all hover:scale-105 group ${expandedPlaylistId === p.id ? 'bg-zinc-800 ring-2 ring-primary' : 'hover:bg-zinc-800'}`}
+                                    role="button"
+                                    aria-expanded={expandedPlaylistId === p.id}
+                                >
+                                    <div className="w-full aspect-square bg-zinc-700/50 rounded-md mb-4 flex items-center justify-center">
+                                        <Music size={48} className="text-zinc-600 group-hover:text-primary transition-colors" />
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <div className="min-w-0">
+                                            <h3 className="font-bold text-white truncate">{p.name}</h3>
+                                            <p className="text-sm text-zinc-500">Playlist</p>
+                                        </div>
+
+                                        <ChevronDown size={20} className={`ml-4 transition-transform duration-200 ${expandedPlaylistId === p.id ? 'rotate-180 text-primary' : 'text-zinc-500 group-hover:text-primary'}`} />
+                                    </div>
                                 </div>
-                                <h3 className="font-bold text-white truncate">{p.name}</h3>
-                                <p className="text-sm text-zinc-500">Playlist</p>
+
+                                {/* Expanded dropdown */}
+                                {expandedPlaylistId === p.id && (
+                                    <div className="col-span-full mt-2 bg-zinc-900/60 p-4 rounded-md">
+                                        {loadingPlaylistId === p.id ? (
+                                            <div className="text-zinc-500">Loading...</div>
+                                        ) : (
+                                            <>
+                                                {playlistTracksMap[p.id]?.length ? (
+                                                    <div className="space-y-2 max-h-60 overflow-y-auto text-sm text-zinc-300">
+                                                        {playlistTracksMap[p.id].map((t, i) => (
+                                                            <div key={`${t.id}-${i}`} className="flex items-center justify-between py-1 border-b border-white/5">
+                                                                <div className="flex items-center gap-3 truncate">
+                                                                    <div className="font-medium truncate">{t.title}</div>
+                                                                    <div className="text-xs text-zinc-500 truncate">{t.artist}</div>
+                                                                </div>
+                                                                <div className="text-xs text-zinc-400">{formatTime(t.duration)}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-zinc-500">No tracks in this playlist.</div>
+                                                )}
+                                                <div className="mt-3 flex gap-2">
+                                                    <button
+                                                        onClick={() => onNavigate(`playlist:${p.id}`)}
+                                                        className="text-sm text-primary hover:underline"
+                                                    >
+                                                        Open full view
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setExpandedPlaylistId(null); }}
+                                                        className="text-sm text-zinc-400 hover:text-white hover:underline"
+                                                    >
+                                                        Close
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         ))}
                         {playlists.length === 0 && (

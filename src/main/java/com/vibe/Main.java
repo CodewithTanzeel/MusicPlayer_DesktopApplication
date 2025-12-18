@@ -3,6 +3,7 @@ package com.vibe;
 import com.vibe.db.DatabaseManager;
 import com.vibe.ui.LoginScene;
 import com.vibe.ui.ResizeHelper;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;

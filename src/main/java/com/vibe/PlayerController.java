@@ -1,15 +1,20 @@
 package com.vibe;
 
+import java.io.File;
+
 import com.vibe.model.Track;
 import com.vibe.structures.DoublyLinkedList;
 import com.vibe.structures.HistoryStack;
 import com.vibe.structures.PlayQueue;
-import javafx.beans.property.*;
+
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.util.Duration;
-
-import java.io.File;
 
 public class PlayerController {
     private static PlayerController instance;
@@ -38,21 +43,24 @@ public class PlayerController {
     }
 
     public void playTrack(Track track) {
+        playTrack(track, true);
+    }
+
+    // Overload: allow skipping adding the current track to history when set to false
+    public void playTrack(Track track, boolean pushToHistory) {
         // Stop previous
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.dispose();
         }
 
-        // Add to history if we were playing something
-        if (currentTrack.get() != null) {
+        // Optionally add to history
+        if (pushToHistory && currentTrack.get() != null) {
             history.push(currentTrack.get());
         }
 
         // Load new
         try {
-            // "track.getFilepath()" assumes absolute path or URI
-            // We need to convert to URI for Media
             File file = new File(track.getFilepath());
             Media media = new Media(file.toURI().toString());
             mediaPlayer = new MediaPlayer(media);
@@ -123,12 +131,17 @@ public class PlayerController {
         // FR-5: Check History first (Back button behavior)
         if (!history.isEmpty()) {
             Track prev = history.pop();
-            // Need to sync currentNode if possible, or just play
-            // Ideally we find 'prev' in our current list to keep sync
-            // For now, simple play
-            playTrack(prev);
-            // Re-sync currentNode if it exists in 'playlist'
-             // ... logic omitted for brevity
+            // Try to find and sync currentNode in playlist to keep the linked-list context consistent
+            DoublyLinkedList.Node<Track> iter = playlist.getHead();
+            while (iter != null) {
+                if (iter.value.getId().equals(prev.getId())) {
+                    currentNode = iter;
+                    break;
+                }
+                iter = iter.next;
+            }
+            // Play without pushing current track back into history
+            playTrack(prev, false);
         } else if (currentNode != null && currentNode.prev != null) {
             currentNode = currentNode.prev;
             playTrack(currentNode.value);
@@ -145,4 +158,32 @@ public class PlayerController {
     public DoubleProperty currentTimeProperty() { return currentTime; }
     public DoubleProperty durationProperty() { return duration; }
     public DoubleProperty volumeProperty() { return volume; }
+
+    /** Pause playback (keeps current position). */
+    public void pause() {
+        if (mediaPlayer != null && isPlaying.get()) {
+            mediaPlayer.pause();
+            isPlaying.set(false);
+        }
+    }
+
+    /** Resume playback from current position. */
+    public void play() {
+        if (mediaPlayer != null && !isPlaying.get()) {
+            mediaPlayer.play();
+            isPlaying.set(true);
+        }
+    }
+
+    /** Seek to a specific time (in seconds) within the current track. */
+    public void seek(double seconds) {
+        if (mediaPlayer == null) return;
+        try {
+            mediaPlayer.seek(javafx.util.Duration.seconds(seconds));
+            // Update current time property immediately so UI reflects position
+            currentTime.set(seconds);
+        } catch (Exception e) {
+            System.err.println("Seek failed: " + e.getMessage());
+        }
+    }
 }

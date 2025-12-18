@@ -1,10 +1,16 @@
 package com.vibe.db;
 
-import com.vibe.model.Track;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.vibe.model.Track;
 
 public class DatabaseManager {
     private static final String OB_URL = "jdbc:sqlite:vibe_music.db";
@@ -209,5 +215,38 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public static boolean deletePlaylist(String playlistId) {
+        String sql1 = "DELETE FROM playlist_songs WHERE playlist_id = ?";
+        String sql2 = "DELETE FROM playlists WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(OB_URL)) {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql1)) {
+                pstmt.setString(1, playlistId);
+                pstmt.executeUpdate();
+            }
+            try (PreparedStatement pstmt2 = conn.prepareStatement(sql2)) {
+                pstmt2.setString(1, playlistId);
+                int affected = pstmt2.executeUpdate();
+                return affected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean removeTrackFromPlaylist(String playlistId, String trackId) {
+        String sql = "DELETE FROM playlist_songs WHERE playlist_id = ? AND track_id = ?";
+        try (Connection conn = DriverManager.getConnection(OB_URL);
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, playlistId);
+            pstmt.setString(2, trackId);
+            int affected = pstmt.executeUpdate();
+            return affected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

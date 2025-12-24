@@ -249,4 +249,24 @@ public class DatabaseManager {
             return false;
         }
     }
+
+    public static boolean deleteTrack(String trackId) {
+        // First remove from all playlists
+        String sql1 = "DELETE FROM playlist_songs WHERE track_id = ?";
+        String sql2 = "DELETE FROM tracks WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(OB_URL)) {
+            try (PreparedStatement pstmt = conn.prepareStatement(sql1)) {
+                pstmt.setString(1, trackId);
+                pstmt.executeUpdate();
+            }
+            try (PreparedStatement pstmt2 = conn.prepareStatement(sql2)) {
+                pstmt2.setString(1, trackId);
+                int affected = pstmt2.executeUpdate();
+                return affected > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

@@ -16,9 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 import com.vibe.model.Playlist;
 import javafx.util.Callback;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import com.vibe.service.CoverArtService;
+
 
 public class MainScene {
 
@@ -28,6 +26,7 @@ public class MainScene {
     private VBox libraryView;
     private QueuePanel queuePanel;
     private NowPlayingView nowPlayingView;
+    private MiniPlayerBar miniPlayerBar;
 
 
     public Parent getView(Stage stage) {
@@ -137,32 +136,11 @@ public class MainScene {
         root.setCenter(libraryView);
 
         // --- Bottom Controls ---
-        HBox controls = new HBox(20);
-        controls.setPrefHeight(90);
-        controls.setAlignment(Pos.CENTER);
-        controls.setStyle(
-                "-fx-background-color: #18181b; -fx-border-color: #27272a; -fx-border-width: 1 0 0 0; -fx-padding: 10 30;");
-
-        VBox trackInfo = new VBox(5);
-        trackInfo.setPrefWidth(250);
-        Label trackTitle = new Label("-");
-        trackTitle.setStyle("-fx-font-weight: bold;");
-        Label trackArtist = new Label("-");
-        trackArtist.setStyle("-fx-text-fill: #a1a1aa;");
-        trackInfo.getChildren().addAll(trackTitle, trackArtist);
-
-        ImageView coverView = new ImageView();
-        coverView.setFitHeight(60);
-        coverView.setFitWidth(60);
-        coverView.setPreserveRatio(true);
-        coverView.setSmooth(true);
-        // Optional: Add some styling or clip to make it look nicer
+        miniPlayerBar = new MiniPlayerBar();
         
-        // Click to open detailed view
-        coverView.setCursor(javafx.scene.Cursor.HAND);
-        coverView.setOnMouseClicked(e -> {
+        // Wire up actions
+        miniPlayerBar.setOnNowPlayingClick(() -> {
             javafx.scene.Node currentCenter = root.getCenter();
-            // Don't switch if already there
             if (currentCenter instanceof NowPlayingView) return;
             
             if (nowPlayingView == null) {
@@ -174,131 +152,37 @@ public class MainScene {
             });
             root.setCenter(nowPlayingView);
         });
-
-
-        HBox btns = new HBox(15);
-        btns.setAlignment(Pos.CENTER);
-        Button prevBtn = new Button("<<");
-        Button playBtn = new Button("Play");
-        Button nextBtn = new Button(">>");
-
-        prevBtn.setOnAction(e -> player.playPrevious());
-        playBtn.setOnAction(e -> player.togglePlay());
-        nextBtn.setOnAction(e -> player.playNext());
-
-        btns.getChildren().addAll(prevBtn, playBtn, nextBtn);
-
-        VBox progressBox = new VBox(5);
-        progressBox.setAlignment(Pos.CENTER);
-        Slider progress = new Slider();
-        progress.setPrefWidth(300);
-        Label timeLabel = new Label("0:00 / 0:00");
-        progressBox.getChildren().addAll(btns, progress, timeLabel);
-
-        // Volume
-        HBox volumeBox = new HBox(10);
-        volumeBox.setAlignment(Pos.CENTER_RIGHT);
-        Label volLabel = new Label("Vol");
-        Slider volumeSlider = new Slider(0, 1, 0.5);
-        volumeSlider.setPrefWidth(100);
-        volumeSlider.valueProperty().bindBidirectional(player.volumeProperty());
-        volumeBox.getChildren().addAll(volLabel, volumeSlider);
-
-        // Queue Toggle
-        Button queueBtn = new Button("Queue");
-        queueBtn.setOnAction(e -> {
-            if (root.getRight() == null) {
+        
+        miniPlayerBar.setOnQueueToggle(() -> {
+             if (root.getRight() == null) {
                 if (queuePanel == null) queuePanel = new QueuePanel();
                 queuePanel.refresh();
                 root.setRight(queuePanel);
-                queueBtn.setStyle("-fx-background-color: #3f3f46; -fx-text-fill: white;");
+                miniPlayerBar.setQueueActive(true);
             } else {
                 root.setRight(null);
-                queueBtn.setStyle("");
+                miniPlayerBar.setQueueActive(false);
             }
         });
-
-        controls.getChildren().addAll(coverView, trackInfo, progressBox, volumeBox, queueBtn);
-        HBox.setHgrow(progressBox, Priority.ALWAYS);
-        HBox.setHgrow(volumeBox, Priority.NEVER);
-
-        root.setBottom(controls);
-
-        // Listeners
-        player.currentTrackProperty().addListener((obs, old, track) -> {
-            if (track != null) {
-                trackTitle.setText(track.getTitle());
-                trackArtist.setText(track.getArtist());
-                
-                // Update Cover Art
-                // Run on background thread if possible, but JavaFX Image background loading is built-in if using url.
-                // Since our service reads files (IO), we should be careful. 
-                // For now, let's keep it simple on FX thread or use a simple task if it lags.
-                Image art = CoverArtService.getInstance().getCoverArt(track);
-                coverView.setImage(art);
-            }
+        
+        miniPlayerBar.setOnDetachAction(() -> {
+            // Switch to Floating Player
+            FloatingMiniPlayer floatingPlayer = new FloatingMiniPlayer(() -> {
+                // Restore Action
+                stage.show();
+                stage.setIconified(false);
+                stage.toFront();
+            });
+            
+            // Position near current window or center?
+            floatingPlayer.setX(stage.getX() + 50);
+            floatingPlayer.setY(stage.getY() + 50);
+            
+            floatingPlayer.show();
+            stage.hide();
         });
 
-        player.isPlayingProperty().addListener((obs, old, playing) -> {
-            playBtn.setText(playing ? "Pause" : "Play");
-        });
-
-        player.currentTimeProperty().addListener((obs, old, time) -> {
-            if (!progress.isValueChanging()) {
-                progress.setValue(time.doubleValue());
-            }
-            timeLabel.setText(formatTime(time.doubleValue()) + " / " + formatTime(player.durationProperty().get()));
-        });
-
-        player.durationProperty().addListener((obs, old, dur) -> {
-            progress.setMax(dur.doubleValue());
-        });
-
-        // Seek behavior: pause during drag and seek/resume on release
-        final boolean[] isDragging = new boolean[] { false };
-        final boolean[] wasPlayingDuringDrag = new boolean[] { false };
-
-        progress.valueChangingProperty().addListener((obs, wasChanging, isChanging) -> {
-            if (isChanging) {
-                // Drag started
-                isDragging[0] = true;
-                wasPlayingDuringDrag[0] = player.isPlayingProperty().get();
-                if (wasPlayingDuringDrag[0])
-                    player.pause();
-            } else {
-                // Drag ended
-                if (isDragging[0]) {
-                    player.seek(progress.getValue());
-                    if (wasPlayingDuringDrag[0])
-                        player.play();
-                    isDragging[0] = false;
-                    wasPlayingDuringDrag[0] = false;
-                }
-            }
-        });
-
-        progress.setOnMousePressed(e -> {
-            // Start drag (mouse)
-            isDragging[0] = true;
-            wasPlayingDuringDrag[0] = player.isPlayingProperty().get();
-            if (wasPlayingDuringDrag[0])
-                player.pause();
-        });
-
-        progress.setOnMouseReleased(e -> {
-            // Click-to-jump or mouse release after minor move: if not currently considered
-            // a changing drag
-            if (!progress.isValueChanging()) {
-                player.seek(progress.getValue());
-                if (wasPlayingDuringDrag[0])
-                    player.play();
-                isDragging[0] = false;
-                wasPlayingDuringDrag[0] = false;
-            }
-        });
-
-        // Note: removed seek-on-key-release to avoid preview behavior while using
-        // keyboard adjustments.
+        root.setBottom(miniPlayerBar);
 
         return root;
     }
@@ -342,11 +226,7 @@ public class MainScene {
         }
     }
 
-    private String formatTime(double seconds) {
-        int m = (int) seconds / 60;
-        int s = (int) seconds % 60;
-        return String.format("%d:%02d", m, s);
-    }
+
 
     private void createLibraryView(BorderPane root, Stage stage) {
         libraryView = new VBox(20);

@@ -70,17 +70,21 @@ public class FloatingMiniPlayer extends Stage {
         info.getChildren().addAll(trackTitle, trackArtist);
         
         // Controls
+        Button prevBtn = new Button("⏮");
+        prevBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #a1a1aa; -fx-font-size: 16px;");
+        prevBtn.setOnAction(e -> player.playPrevious());
+
         playBtn = new Button("▶");
-        playBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 16px;");
+        playBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-font-size: 20px;");
         playBtn.setOnAction(e -> player.togglePlay());
         
-        Button nextBtn = new Button(">>");
-        nextBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #a1a1aa; -fx-font-size: 12px;");
+        Button nextBtn = new Button("⏭");
+        nextBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #a1a1aa; -fx-font-size: 16px;");
         nextBtn.setOnAction(e -> player.playNext());
 
         Button restoreBtn = new Button("↙"); // Restore icon
         restoreBtn.setTooltip(new javafx.scene.control.Tooltip("Restore to Main Player"));
-        restoreBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #a1a1aa; -fx-font-size: 12px;");
+        restoreBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: #a1a1aa; -fx-font-size: 14px;");
         restoreBtn.setOnAction(e -> restore());
         
         Button closeBtn = new Button("x");
@@ -90,7 +94,7 @@ public class FloatingMiniPlayer extends Stage {
         // Layout
         HBox controls = new HBox(5);
         controls.setAlignment(Pos.CENTER_RIGHT);
-        controls.getChildren().addAll(playBtn, nextBtn, restoreBtn);
+        controls.getChildren().addAll(prevBtn, playBtn, nextBtn, restoreBtn);
         
         root.getChildren().addAll(coverView, info, controls);
         HBox.setHgrow(info, Priority.ALWAYS);

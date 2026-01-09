@@ -65,9 +65,9 @@ public class MiniPlayerBar extends HBox {
         // --- 2. Center Controls (Progress + Buttons) ---
         HBox btns = new HBox(15);
         btns.setAlignment(Pos.CENTER);
-        Button prevBtn = new Button("<<");
-        playBtn = new Button("Play");
-        Button nextBtn = new Button(">>");
+        Button prevBtn = new Button("⏮");
+        playBtn = new Button("▶");
+        Button nextBtn = new Button("⏭");
 
         // Styling
         String btnStyle = "-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: #3f3f46; -fx-border-radius: 4;";
@@ -135,7 +135,7 @@ public class MiniPlayerBar extends HBox {
 
         // Playback State
         player.isPlayingProperty().addListener((obs, old, playing) -> {
-            playBtn.setText(playing ? "Pause" : "Play");
+            playBtn.setText(playing ? "⏸" : "▶");
         });
 
         // Time / Progress

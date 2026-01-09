@@ -19,14 +19,15 @@ public class Main extends Application {
         
         // Initialize DB
         DatabaseManager.initialize();
+        PlayerController.getInstance().initialize();
 
         stage.initStyle(StageStyle.UNDECORATED); // Remove OS Window Frame
-        stage.setTitle("Vibe Music Player");
+        stage.setTitle("MusicPlayer");
         
         // Start with Login
         LoginScene login = new LoginScene();
         // We pass the stage to the Scene creator so it can add controls
-        Scene scene = new Scene(login.getView(stage), 1280, 800);
+        Scene scene = new Scene(login.getView(stage), 1280, 720);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         
         stage.setScene(scene);

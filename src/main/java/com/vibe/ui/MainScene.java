@@ -23,6 +23,8 @@ public class MainScene {
 
     private TableView<Track> libraryTable;
     private VBox libraryView;
+    private QueuePanel queuePanel;
+
 
     public Parent getView(Stage stage) {
         BorderPane root = new BorderPane();
@@ -173,7 +175,21 @@ public class MainScene {
         volumeSlider.valueProperty().bindBidirectional(player.volumeProperty());
         volumeBox.getChildren().addAll(volLabel, volumeSlider);
 
-        controls.getChildren().addAll(trackInfo, progressBox, volumeBox);
+        // Queue Toggle
+        Button queueBtn = new Button("Queue");
+        queueBtn.setOnAction(e -> {
+            if (root.getRight() == null) {
+                if (queuePanel == null) queuePanel = new QueuePanel();
+                queuePanel.refresh();
+                root.setRight(queuePanel);
+                queueBtn.setStyle("-fx-background-color: #3f3f46; -fx-text-fill: white;");
+            } else {
+                root.setRight(null);
+                queueBtn.setStyle("");
+            }
+        });
+
+        controls.getChildren().addAll(trackInfo, progressBox, volumeBox, queueBtn);
         HBox.setHgrow(progressBox, Priority.ALWAYS);
         HBox.setHgrow(volumeBox, Priority.NEVER);
 
@@ -354,6 +370,8 @@ public class MainScene {
                     private final MenuButton btn = new MenuButton("...");
                     private final MenuItem createItem = new MenuItem("Create New Playlist");
                     private final MenuItem addItem = new MenuItem("Add to Existing Playlist");
+                    private final MenuItem addToQueueItem = new MenuItem("Add to Queue");
+                    private final MenuItem playNextItem = new MenuItem("Play Next");
                     private final MenuItem deleteItem = new MenuItem("Delete from Library");
 
                     {
@@ -365,6 +383,16 @@ public class MainScene {
                         addItem.setOnAction(event -> {
                             Track track = getTableView().getItems().get(getIndex());
                             showAddToPlaylistDialog(track);
+                        });
+                        addToQueueItem.setOnAction(event -> {
+                            Track track = getTableView().getItems().get(getIndex());
+                            player.addToQueue(track);
+                            if (queuePanel != null) queuePanel.refresh();
+                        });
+                        playNextItem.setOnAction(event -> {
+                            Track track = getTableView().getItems().get(getIndex());
+                            player.playNextInQueue(track);
+                            if (queuePanel != null) queuePanel.refresh();
                         });
                         deleteItem.setOnAction(event -> {
                             Track track = getTableView().getItems().get(getIndex());
@@ -393,7 +421,7 @@ public class MainScene {
                                 }
                             }
                         });
-                        btn.getItems().addAll(createItem, addItem, deleteItem);
+                        btn.getItems().addAll(createItem, addItem, addToQueueItem, playNextItem, deleteItem);
                     }
 
                     @Override

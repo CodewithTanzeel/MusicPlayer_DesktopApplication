@@ -15,7 +15,7 @@ public class WindowControls extends HBox {
     public WindowControls(Stage stage) {
         this.setAlignment(Pos.CENTER_RIGHT);
         this.setPrefHeight(32);
-        this.setStyle("-fx-background-color: #0f0f13; -fx-padding: 0 10 0 10;");
+        this.setStyle("-fx-background-color: #15151bff; -fx-padding: 0 10 0 10;");
 
         // Drag Logic
         Region spacer = new Region();
@@ -32,7 +32,7 @@ public class WindowControls extends HBox {
         });
 
         // Buttons
-        Button minBtn = createButton("_");
+        Button minBtn = createButton("-");
         minBtn.setOnAction(e -> stage.setIconified(true));
 
         Button maxBtn = createButton("□");

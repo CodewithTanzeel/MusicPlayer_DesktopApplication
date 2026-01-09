@@ -99,6 +99,25 @@ public class PlayerController {
         playTrack(startTrack);
     }
 
+    public void info(String msg) {
+        System.out.println("[PlayerController] " + msg);
+    }
+
+    public void initialize() {
+        // Load queue from DB
+        java.util.List<Track> savedQueue = com.vibe.db.DatabaseManager.loadQueue();
+        if (savedQueue != null && !savedQueue.isEmpty()) {
+            for (Track t : savedQueue) {
+                queue.enqueue(t);
+            }
+            info("Loaded " + savedQueue.size() + " tracks from saved queue.");
+        }
+    }
+
+    private void saveQueueState() {
+        com.vibe.db.DatabaseManager.saveQueue(queue.getAll());
+    }
+
     public void togglePlay() {
         if (mediaPlayer == null) return;
         if (isPlaying.get()) {
@@ -114,6 +133,7 @@ public class PlayerController {
         // FR-4: Check Queue first
         if (!queue.isEmpty()) {
             Track next = queue.dequeue();
+            saveQueueState(); // Update DB
             playTrack(next);
             return;
         }
@@ -150,8 +170,29 @@ public class PlayerController {
 
     public void addToQueue(Track track) {
         queue.enqueue(track);
+        saveQueueState();
     }
     
+    public void playNextInQueue(Track track) {
+        queue.addFirst(track);
+        saveQueueState();
+    }
+    
+    public void removeFromQueue(int index) {
+        queue.remove(index);
+        saveQueueState();
+    }
+    
+    public void moveQueueItem(int from, int to) {
+        queue.move(from, to);
+        saveQueueState();
+    }
+    
+    /** Returns a copy of the current queue list. */
+    public java.util.List<Track> getQueueList() {
+        return queue.getAll();
+    }
+
     // Getters for properties
     public ObjectProperty<Track> currentTrackProperty() { return currentTrack; }
     public BooleanProperty isPlayingProperty() { return isPlaying; }

@@ -46,6 +46,14 @@ public class DatabaseManager {
                     "FOREIGN KEY(playlist_id) REFERENCES playlists(id), " +
                     "FOREIGN KEY(track_id) REFERENCES tracks(id))");
 
+            // User Queue
+            stmt.execute("CREATE TABLE IF NOT EXISTS user_queue (" +
+                    "user_id TEXT, " + // Reserved for future multi-user validaton
+                    "track_id TEXT, " +
+                    "position INTEGER, " +
+                    "PRIMARY KEY (user_id, position), " +
+                    "FOREIGN KEY(track_id) REFERENCES tracks(id))");
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -268,5 +276,68 @@ public class DatabaseManager {
             e.printStackTrace();
             return false;
         }
+    }
+
+    // --- Queue Persistence ---
+
+    public static void saveQueue(List<Track> queue) {
+        // We act as a single user for now, using a fixed ID or just ignoring user_id for select *
+        String userId = "default_user";
+        
+        String clearSql = "DELETE FROM user_queue WHERE user_id = ?";
+        String insertSql = "INSERT INTO user_queue(user_id, track_id, position) VALUES(?,?,?)";
+        
+        try (Connection conn = DriverManager.getConnection(OB_URL)) {
+            conn.setAutoCommit(false); // Transaction
+            
+            try (PreparedStatement clearStmt = conn.prepareStatement(clearSql)) {
+                clearStmt.setString(1, userId);
+                clearStmt.executeUpdate();
+            }
+            
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                int pos = 0;
+                for (Track t : queue) {
+                    insertStmt.setString(1, userId);
+                    insertStmt.setString(2, t.getId());
+                    insertStmt.setInt(3, pos++);
+                    insertStmt.addBatch();
+                }
+                insertStmt.executeBatch();
+            }
+            
+            conn.commit();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static List<Track> loadQueue() {
+        List<Track> list = new ArrayList<>();
+        String userId = "default_user";
+        String sql = "SELECT t.* FROM tracks t " +
+                     "JOIN user_queue uq ON t.id = uq.track_id " +
+                     "WHERE uq.user_id = ? " +
+                     "ORDER BY uq.position ASC";
+                     
+        try (Connection conn = DriverManager.getConnection(OB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userId);
+            try(ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(new Track(
+                        rs.getString("id"),
+                        rs.getString("filepath"),
+                        rs.getString("title"),
+                        rs.getString("artist"),
+                        rs.getString("album"),
+                        rs.getLong("duration")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

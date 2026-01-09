@@ -25,7 +25,7 @@ public class LoginScene {
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-padding: 50;");
 
-        Label title = new Label("Vibe");
+        Label title = new Label("MusicPlayer");
         title.setStyle(
                 "-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: linear-gradient(to right, #a78bfa, #f472b6);");
 

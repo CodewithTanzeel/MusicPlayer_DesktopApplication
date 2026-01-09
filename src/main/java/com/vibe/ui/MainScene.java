@@ -16,6 +16,9 @@ import java.util.Optional;
 import java.util.UUID;
 import com.vibe.model.Playlist;
 import javafx.util.Callback;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import com.vibe.service.CoverArtService;
 
 public class MainScene {
 
@@ -24,6 +27,7 @@ public class MainScene {
     private TableView<Track> libraryTable;
     private VBox libraryView;
     private QueuePanel queuePanel;
+    private NowPlayingView nowPlayingView;
 
 
     public Parent getView(Stage stage) {
@@ -147,6 +151,31 @@ public class MainScene {
         trackArtist.setStyle("-fx-text-fill: #a1a1aa;");
         trackInfo.getChildren().addAll(trackTitle, trackArtist);
 
+        ImageView coverView = new ImageView();
+        coverView.setFitHeight(60);
+        coverView.setFitWidth(60);
+        coverView.setPreserveRatio(true);
+        coverView.setSmooth(true);
+        // Optional: Add some styling or clip to make it look nicer
+        
+        // Click to open detailed view
+        coverView.setCursor(javafx.scene.Cursor.HAND);
+        coverView.setOnMouseClicked(e -> {
+            javafx.scene.Node currentCenter = root.getCenter();
+            // Don't switch if already there
+            if (currentCenter instanceof NowPlayingView) return;
+            
+            if (nowPlayingView == null) {
+                nowPlayingView = new NowPlayingView();
+            }
+            
+            nowPlayingView.setOnBackAction(() -> {
+                root.setCenter(currentCenter != null ? currentCenter : libraryView);
+            });
+            root.setCenter(nowPlayingView);
+        });
+
+
         HBox btns = new HBox(15);
         btns.setAlignment(Pos.CENTER);
         Button prevBtn = new Button("<<");
@@ -189,7 +218,7 @@ public class MainScene {
             }
         });
 
-        controls.getChildren().addAll(trackInfo, progressBox, volumeBox, queueBtn);
+        controls.getChildren().addAll(coverView, trackInfo, progressBox, volumeBox, queueBtn);
         HBox.setHgrow(progressBox, Priority.ALWAYS);
         HBox.setHgrow(volumeBox, Priority.NEVER);
 
@@ -200,6 +229,13 @@ public class MainScene {
             if (track != null) {
                 trackTitle.setText(track.getTitle());
                 trackArtist.setText(track.getArtist());
+                
+                // Update Cover Art
+                // Run on background thread if possible, but JavaFX Image background loading is built-in if using url.
+                // Since our service reads files (IO), we should be careful. 
+                // For now, let's keep it simple on FX thread or use a simple task if it lags.
+                Image art = CoverArtService.getInstance().getCoverArt(track);
+                coverView.setImage(art);
             }
         });
 

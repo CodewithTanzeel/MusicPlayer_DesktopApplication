@@ -10,6 +10,8 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
+import javafx.scene.image.ImageView;
+import com.vibe.service.CoverArtService;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,12 +52,18 @@ public class QueuePanel extends VBox {
         private HBox content;
         private Label title;
         private Label artist;
+        private ImageView thumb;
         private Button removeBtn;
 
         public QueueListCell() {
             content = new HBox(10);
             content.setAlignment(Pos.CENTER_LEFT);
             content.setPadding(new Insets(5));
+            
+            thumb = new ImageView();
+            thumb.setFitHeight(32);
+            thumb.setFitWidth(32);
+            thumb.setPreserveRatio(true);
             
             VBox info = new VBox(2);
             title = new Label();
@@ -78,7 +86,7 @@ public class QueuePanel extends VBox {
                 }
             });
 
-            content.getChildren().addAll(info, removeBtn);
+            content.getChildren().addAll(thumb, info, removeBtn);
             
             // Drag and Drop Logic
             setOnDragDetected(event -> {
@@ -136,6 +144,7 @@ public class QueuePanel extends VBox {
             } else {
                 title.setText(item.getTitle());
                 artist.setText(item.getArtist());
+                thumb.setImage(CoverArtService.getInstance().getCoverArt(item));
                 setGraphic(content);
             }
         }

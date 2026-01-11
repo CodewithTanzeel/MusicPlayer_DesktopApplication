@@ -27,6 +27,7 @@ public class MainScene {
     private QueuePanel queuePanel;
     private NowPlayingView nowPlayingView;
     private MiniPlayerBar miniPlayerBar;
+    private EqualizerPanel equalizerPanel;
 
 
     public Parent getView(Stage stage) {
@@ -128,7 +129,11 @@ public class MainScene {
             }
         });
 
-        sidebar.getChildren().addAll(brand, libraryBtn, playlistsBtn, playlistScroll);
+        Button equalizerBtn = new Button("Equalizer");
+        equalizerBtn.setMaxWidth(Double.MAX_VALUE);
+        equalizerBtn.setOnAction(e -> showEqualizer(root));
+
+        sidebar.getChildren().addAll(brand, libraryBtn, playlistsBtn, playlistScroll, equalizerBtn);
         root.setLeft(sidebar);
 
         // --- Center Content (Library Default) ---
@@ -708,5 +713,12 @@ public class MainScene {
             alert.setContentText("Song added to the playlist: " + playlist.getName());
             alert.showAndWait();
         });
+    }
+
+    private void showEqualizer(BorderPane root) {
+        if (equalizerPanel == null) {
+            equalizerPanel = new EqualizerPanel();
+        }
+        root.setCenter(equalizerPanel);
     }
 }

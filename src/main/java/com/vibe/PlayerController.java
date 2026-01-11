@@ -34,6 +34,10 @@ public class PlayerController {
     private DoubleProperty currentTime = new SimpleDoubleProperty(0);
     private DoubleProperty duration = new SimpleDoubleProperty(0);
     private DoubleProperty volume = new SimpleDoubleProperty(0.5);
+    
+    // Equalizer
+    private boolean equalizerEnabled = false;
+    private double[] equalizerGains = new double[10]; // Default 10 bands
 
     private PlayerController() {}
 
@@ -79,6 +83,9 @@ public class PlayerController {
             
             // Bind volume
             mediaPlayer.volumeProperty().bind(volume);
+            
+            // Apply Equalizer
+            applyEqualizer();
 
             currentTrack.set(track);
         } catch (Exception e) {
@@ -225,6 +232,35 @@ public class PlayerController {
             currentTime.set(seconds);
         } catch (Exception e) {
             System.err.println("Seek failed: " + e.getMessage());
+        }
+    }
+
+    // Equalizer Methods
+    public boolean isEqualizerEnabled() { return equalizerEnabled; }
+    public void setEqualizerEnabled(boolean enabled) {
+        this.equalizerEnabled = enabled;
+        applyEqualizer();
+    }
+
+    public double[] getEqualizerGains() { return equalizerGains; }
+    public void setEqualizerGain(int bandIndex, double gain) {
+        if (bandIndex >= 0 && bandIndex < equalizerGains.length) {
+            equalizerGains[bandIndex] = gain;
+            applyEqualizer();
+        }
+    }
+
+    private void applyEqualizer() {
+        if (mediaPlayer == null) return;
+        
+        javafx.scene.media.AudioEqualizer eq = mediaPlayer.getAudioEqualizer();
+        eq.setEnabled(equalizerEnabled);
+        
+        if (equalizerEnabled) {
+            java.util.List<javafx.scene.media.EqualizerBand> bands = eq.getBands();
+            for (int i = 0; i < bands.size() && i < equalizerGains.length; i++) {
+                bands.get(i).setGain(equalizerGains[i]);
+            }
         }
     }
 }

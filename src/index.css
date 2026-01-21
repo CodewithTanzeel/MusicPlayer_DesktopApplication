@@ -1,38 +1,113 @@
+/* =========================================================
+   VIBE Music Player - React Workspace Stylesheet
+   Visual System: High-Contrast Dark Mode (Hybrid Architecture)
+   
+   This stylesheet synchronizes with the JavaFX native shell
+   to create a "Seamless Shell" experience.
+   ========================================================= */
+
 :root {
-  --bg-main: #0f0f13;
-  --bg-sidebar: #18181b;
-  --bg-panel: #202025;
-  --bg-glass: rgba(32, 32, 37, 0.7);
-  
-  --primary: #8b5cf6; /* Violet */
-  --primary-glow: rgba(139, 92, 246, 0.5);
-  --accent: #ec4899; /* Pink */
-  
-  --text-main: #ffffff;
-  --text-muted: #e8e8ee;
-  
-  --border-subtle: #27272a;
-  
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* ==== React Workspace Palette ==== */
+  --bg-main: #121212;
+  /* Deep Charcoal - synced with JavaFX Scene */
+  --bg-workspace: #18181B;
+  /* Zinc-900 - primary React area */
+  --bg-surface: #1F1F23;
+  /* Elevated cards/panels */
+  --bg-elevated: #27272A;
+  /* Higher elevation surfaces */
+  --bg-glass: rgba(24, 24, 27, 0.85);
+
+  /* ==== Accent Colors ==== */
+  --accent-primary: #6366F1;
+  /* Indigo-500 - interactive elements */
+  --accent-hover: #818CF8;
+  /* Indigo-400 - hover state */
+  --accent-muted: #4338CA;
+  /* Indigo-700 - muted accent */
+  --accent-glow: rgba(99, 102, 241, 0.4);
+
+  --success: #22C55E;
+  /* Green-500 */
+  --success-muted: rgba(34, 197, 94, 0.15);
+
+  --danger: #F43F5E;
+  /* Rose-500 - focus ring / alerts */
+  --danger-muted: rgba(244, 63, 94, 0.15);
+
+  --warning: #F59E0B;
+  /* Amber-500 */
+
+  /* ==== Text Hierarchy ==== */
+  --text-primary: #FFFFFF;
+  /* High emphasis - task headers */
+  --text-secondary: #E4E4E7;
+  /* Zinc-200 - data grid text */
+  --text-muted: #A1A1AA;
+  /* Zinc-400 - low emphasis */
+  --text-subtle: #71717A;
+  /* Zinc-500 - status bar feedback */
+
+  /* ==== Borders & Overlays ==== */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --overlay-bg: rgba(24, 24, 27, 0.8);
+
+  /* ==== Typography ==== */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* ==== Spacing (4px Base Unit) ==== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ==== Border Radius ==== */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* ==== Transitions ==== */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
 }
+
+/* =========================================================
+   RESET & BASE STYLES
+   ========================================================= */
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  user-select: none; /* App-like feel */
+  user-select: none;
 }
 
 body {
   font-family: var(--font-sans);
   background-color: var(--bg-main);
-  color: var(--text-main);
-  overflow: hidden; /* App-like, no body scroll */
+  color: var(--text-primary);
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
 }
+
+/* =========================================================
+   SCROLLBAR (Synchronized with JavaFX)
+   ========================================================= */
 
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -40,50 +115,93 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 4px;
+  transition: background var(--transition-base);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: rgba(255, 255, 255, 0.25);
 }
 
-/* Glassmorphism Utilities */
-.glass {
-  background: var(--bg-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* =========================================================
+   TYPOGRAPHY HIERARCHY
+   ========================================================= */
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Typography */
-h1, h2, h3, h4, h5 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
   letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-subtle {
+  color: var(--text-subtle);
+}
+
+.text-accent {
+  color: var(--accent-primary);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 
 button {
   cursor: pointer;
   font-family: inherit;
   border: none;
   background: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-base);
 }
 
 button:disabled {
@@ -91,28 +209,122 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Input Styles */
-input {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all var(--transition-base);
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
   color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  outline: none;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.btn-secondary {
+  background-color: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-muted);
+}
+
+.btn-ghost:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background-color: var(--danger-muted);
+  color: var(--danger);
+}
+
+.btn-danger:hover {
+  background-color: var(--danger);
+  color: white;
+}
+
+/* Icon button */
+.btn-icon {
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+}
+
+/* =========================================================
+   FORM INPUTS
+   ========================================================= */
+
+input,
+textarea,
+select {
   font-family: inherit;
-  transition: border-color 0.2s;
+  font-size: 14px;
 }
 
-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: all var(--transition-base);
 }
 
-/* Range Input (Slider) */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-subtle);
+}
+
+/* =========================================================
+   RANGE INPUTS (Sliders)
+   ========================================================= */
+
 input[type=range] {
   -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   background: transparent;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
 }
 
 input[type=range]::-webkit-slider-thumb {
@@ -122,23 +334,190 @@ input[type=range]::-webkit-slider-thumb {
   border-radius: 50%;
   background: white;
   margin-top: -4px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform var(--transition-fast);
 }
 
-input[type=range]::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 4px;
-  background: #3f3f46;
-  border-radius: 2px;
+input[type=range]:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
 }
 
 input[type=range]:focus::-webkit-slider-runnable-track {
-  background: var(--primary);
+  background: var(--accent-primary);
 }
 
-/* Playlist dropdown scroll & auto-hide scrollbar */
+/* Firefox */
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
+
+input[type=range]::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================================
+   GLASSMORPHISM UTILITIES
+   ========================================================= */
+
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+}
+
+.glass-strong {
+  background: rgba(24, 24, 27, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  transition: all var(--transition-base);
+}
+
+.card:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.card-interactive:hover {
+  background: var(--bg-elevated);
+  cursor: pointer;
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.2s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* =========================================================
+   DROPDOWN & MENU STYLES
+   ========================================================= */
+
+.dropdown-menu {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1) 0;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  min-width: 180px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  color: var(--text-secondary);
+  font-size: 13px;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--space-1) 0;
+}
+
+/* =========================================================
+   PLAYLIST DROPDOWN (Specific styling)
+   ========================================================= */
+
 .playlist-dropdown {
   scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
 .playlist-dropdown::-webkit-scrollbar {
@@ -150,33 +529,265 @@ input[type=range]:focus::-webkit-slider-runnable-track {
 }
 
 .playlist-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(63,63,70,0);
+  background: rgba(255, 255, 255, 0);
   border-radius: 6px;
-  transition: background 180ms ease, opacity 180ms ease;
+  transition: background var(--transition-base), opacity var(--transition-base);
   opacity: 0;
 }
 
 .playlist-dropdown:hover::-webkit-scrollbar-thumb {
-  background: rgba(63,63,70,0.85);
+  background: rgba(255, 255, 255, 0.15);
   opacity: 1;
 }
 
-/* Firefox */
-.playlist-dropdown {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(63,63,70,0.85) transparent;
-}
+/* =========================================================
+   UTILITY TRANSFORMATIONS
+   ========================================================= */
 
-/* Small utility to fade chevron when rotating */
 .rotate-90 {
   transform: rotate(90deg);
   transform-origin: center;
-  transition: transform 150ms ease;
+  transition: transform var(--transition-fast);
 }
 
 .rotate-180 {
   transform: rotate(180deg);
   transform-origin: center;
-  transition: transform 150ms ease;
+  transition: transform var(--transition-fast);
 }
 
+/* =========================================================
+   FOCUS STATES (Accessibility - Using Rose-500 for alerts)
+   ========================================================= */
+
+*:focus-visible {
+  outline: 2px solid var(--danger);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   LAYOUT UTILITIES (Bridge Alignment)
+   ========================================================= */
+
+.container {
+  max-width: 100%;
+  padding: 0 var(--space-4);
+}
+
+/* Ensures React content doesn't hug window edges */
+.workspace-padding {
+  padding: var(--space-6);
+}
+
+/* =========================================================
+   STATUS INDICATORS
+   ========================================================= */
+
+.status-playing {
+  color: var(--success);
+}
+
+.status-paused {
+  color: var(--text-muted);
+}
+
+.status-error {
+  color: var(--danger);
+}
+
+/* Playing indicator animation */
+.playing-indicator {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+
+.playing-indicator span {
+  width: 3px;
+  background: var(--success);
+  border-radius: 1px;
+  animation: equalizerBar 0.6s ease-in-out infinite alternate;
+}
+
+.playing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.playing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.playing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes equalizerBar {
+  from {
+    height: 4px;
+  }
+
+  to {
+    height: 16px;
+  }
+}
+
+/* =========================================================
+   SPACING UTILITIES (4px Base Unit)
+   ========================================================= */
+
+.p-1 {
+  padding: var(--space-1);
+}
+
+.p-2 {
+  padding: var(--space-2);
+}
+
+.p-3 {
+  padding: var(--space-3);
+}
+
+.p-4 {
+  padding: var(--space-4);
+}
+
+.p-6 {
+  padding: var(--space-6);
+}
+
+.p-8 {
+  padding: var(--space-8);
+}
+
+.px-2 {
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+
+.px-4 {
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.px-6 {
+  padding-left: var(--space-6);
+  padding-right: var(--space-6);
+}
+
+.py-2 {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.py-4 {
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
+}
+
+.py-6 {
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+}
+
+.gap-1 {
+  gap: var(--space-1);
+}
+
+.gap-2 {
+  gap: var(--space-2);
+}
+
+.gap-3 {
+  gap: var(--space-3);
+}
+
+.gap-4 {
+  gap: var(--space-4);
+}
+
+.gap-6 {
+  gap: var(--space-6);
+}
+
+.m-1 {
+  margin: var(--space-1);
+}
+
+.m-2 {
+  margin: var(--space-2);
+}
+
+.m-4 {
+  margin: var(--space-4);
+}
+
+.mt-2 {
+  margin-top: var(--space-2);
+}
+
+.mt-4 {
+  margin-top: var(--space-4);
+}
+
+.mb-2 {
+  margin-bottom: var(--space-2);
+}
+
+.mb-4 {
+  margin-bottom: var(--space-4);
+}
+
+/* =========================================================
+   BORDER RADIUS UTILITIES
+   ========================================================= */
+
+.rounded-sm {
+  border-radius: var(--radius-sm);
+}
+
+.rounded {
+  border-radius: var(--radius-md);
+}
+
+.rounded-lg {
+  border-radius: var(--radius-lg);
+}
+
+.rounded-xl {
+  border-radius: var(--radius-xl);
+}
+
+.rounded-full {
+  border-radius: var(--radius-full);
+}
+
+/* =========================================================
+   BACKGROUND UTILITIES
+   ========================================================= */
+
+.bg-main {
+  background-color: var(--bg-main);
+}
+
+.bg-workspace {
+  background-color: var(--bg-workspace);
+}
+
+.bg-surface {
+  background-color: var(--bg-surface);
+}
+
+.bg-elevated {
+  background-color: var(--bg-elevated);
+}
+
+.bg-accent {
+  background-color: var(--accent-primary);
+}

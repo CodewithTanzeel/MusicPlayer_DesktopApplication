@@ -15,125 +15,47 @@ import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 import com.vibe.model.Playlist;
-import javafx.util.Callback;
+import java.util.List;
 
+import javafx.util.Callback;
 
 public class MainScene {
 
     private PlayerController player = PlayerController.getInstance();
+    private BorderPane root; // Class-level root
 
-    private TableView<Track> libraryTable;
     private VBox libraryView;
     private QueuePanel queuePanel;
     private NowPlayingView nowPlayingView;
     private MiniPlayerBar miniPlayerBar;
     private EqualizerPanel equalizerPanel;
 
-
     public Parent getView(Stage stage) {
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
 
         // Custom Title Bar
         root.setTop(new WindowControls(stage));
 
         // --- Sidebar ---
-        VBox sidebar = new VBox(15);
-        sidebar.setPrefWidth(240);
-        sidebar.setStyle("-fx-background-color: #18181b; -fx-padding: 20;");
+        VBox sidebar = new VBox(8); // Reduced spacing
+        sidebar.setPrefWidth(220); // Slightly narrower
+        sidebar.getStyleClass().add("sidebar"); // Use styled class
 
         Label brand = new Label("Vibe");
-        brand.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;");
+        brand.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white; -fx-padding: 0 0 24 12;");
 
-        Button libraryBtn = new Button("Library");
-        libraryBtn.setMaxWidth(Double.MAX_VALUE);
+        Button libraryBtn = createNavButton("Library", "library_icon.png");
         libraryBtn.setOnAction(e -> showLibrary(root));
+        libraryBtn.getStyleClass().add("active"); // Default
+                                                  // active
 
-        // Playlists header (button + caret)
-        Button playlistsBtn = new Button("Playlists");
-        playlistsBtn.setMaxWidth(Double.MAX_VALUE);
-        Label caretLabel = new Label("\u25BE");
-        caretLabel.setStyle("-fx-text-fill: #a1a1aa; -fx-font-size: 12px;");
+        Button playlistBtn = createNavButton("Playlists", "playlist_icon.png");
+        playlistBtn.setOnAction(e -> showPlaylists(root));
 
-        // Embed caret inside button
-        playlistsBtn.setGraphic(caretLabel);
-        playlistsBtn.setContentDisplay(ContentDisplay.RIGHT);
-        playlistsBtn.setAlignment(Pos.CENTER_LEFT);
-
-        // Create a spacer to push the caret to the right if desired, or simpler:
-        // For a simple "inside", standard graphic placement is usually fine,
-        // but let's try to mimic a nice dropdown look.
-        // Since we are using ContentDisplay.RIGHT, the icon is to the right of text.
-        // To push it to the far right, we would need a custom HBox as graphic with
-        // empty text.
-        // But let's stick to the simplest interpretation first: arrow inside button
-        // next to text.
-        // Actually, to make it look good (spread out), we can put the text and label in
-        // the graphic?
-        // Let's stick to the requested change: "put drop down arrow inside the button".
-        // Use a graphic text gap.
-        playlistsBtn.setGraphicTextGap(8);
-
-        // Dropdown content
-        VBox playlistDropdown = new VBox(6);
-        playlistDropdown.setStyle("-fx-padding: 6 0 0 0;");
-
-        // Scroll area (start collapsed)
-        ScrollPane playlistScroll = new ScrollPane(playlistDropdown);
-        playlistScroll.setFitToWidth(true);
-        playlistScroll.setPrefViewportHeight(0);
-        playlistScroll.setMaxHeight(0);
-        playlistScroll.setMinHeight(0);
-        playlistScroll.setStyle("-fx-background-color: transparent; -fx-padding: 4 0 0 0;");
-        playlistScroll.setVisible(false);
-        playlistScroll.setManaged(false);
-
-        // Animation settings
-        final double expandedHeight = 220.0;
-        final javafx.util.Duration animDur = javafx.util.Duration.millis(220);
-
-        playlistsBtn.setOnAction(e -> {
-            boolean opening = playlistScroll.getMaxHeight() == 0;
-            if (opening) {
-                rebuildPlaylistDropdown(playlistDropdown, root);
-                playlistScroll.setVisible(true);
-                playlistScroll.setManaged(true);
-
-                javafx.animation.Timeline tl = new javafx.animation.Timeline(
-                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                                new javafx.animation.KeyValue(playlistScroll.maxHeightProperty(), 0),
-                                new javafx.animation.KeyValue(playlistScroll.prefViewportHeightProperty(), 0),
-                                new javafx.animation.KeyValue(caretLabel.rotateProperty(), 0)),
-                        new javafx.animation.KeyFrame(animDur,
-                                new javafx.animation.KeyValue(playlistScroll.maxHeightProperty(), expandedHeight),
-                                new javafx.animation.KeyValue(playlistScroll.prefViewportHeightProperty(),
-                                        expandedHeight - 20),
-                                new javafx.animation.KeyValue(caretLabel.rotateProperty(), 180)));
-                tl.play();
-            } else {
-                javafx.animation.Timeline tl = new javafx.animation.Timeline(
-                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
-                                new javafx.animation.KeyValue(playlistScroll.maxHeightProperty(),
-                                        playlistScroll.getMaxHeight()),
-                                new javafx.animation.KeyValue(playlistScroll.prefViewportHeightProperty(),
-                                        playlistScroll.getPrefViewportHeight()),
-                                new javafx.animation.KeyValue(caretLabel.rotateProperty(), 180)),
-                        new javafx.animation.KeyFrame(animDur,
-                                new javafx.animation.KeyValue(playlistScroll.maxHeightProperty(), 0),
-                                new javafx.animation.KeyValue(playlistScroll.prefViewportHeightProperty(), 0),
-                                new javafx.animation.KeyValue(caretLabel.rotateProperty(), 0)));
-                tl.setOnFinished(ev2 -> {
-                    playlistScroll.setVisible(false);
-                    playlistScroll.setManaged(false);
-                });
-                tl.play();
-            }
-        });
-
-        Button equalizerBtn = new Button("Equalizer");
-        equalizerBtn.setMaxWidth(Double.MAX_VALUE);
+        Button equalizerBtn = createNavButton("Equalizer", "equalizer_icon.png");
         equalizerBtn.setOnAction(e -> showEqualizer(root));
 
-        sidebar.getChildren().addAll(brand, libraryBtn, playlistsBtn, playlistScroll, equalizerBtn);
+        sidebar.getChildren().addAll(brand, libraryBtn, playlistBtn, equalizerBtn);
         root.setLeft(sidebar);
 
         // --- Center Content (Library Default) ---
@@ -142,25 +64,27 @@ public class MainScene {
 
         // --- Bottom Controls ---
         miniPlayerBar = new MiniPlayerBar();
-        
+
         // Wire up actions
         miniPlayerBar.setOnNowPlayingClick(() -> {
             javafx.scene.Node currentCenter = root.getCenter();
-            if (currentCenter instanceof NowPlayingView) return;
-            
+            if (currentCenter instanceof NowPlayingView)
+                return;
+
             if (nowPlayingView == null) {
                 nowPlayingView = new NowPlayingView();
             }
-            
+
             nowPlayingView.setOnBackAction(() -> {
                 root.setCenter(currentCenter != null ? currentCenter : libraryView);
             });
             root.setCenter(nowPlayingView);
         });
-        
+
         miniPlayerBar.setOnQueueToggle(() -> {
-             if (root.getRight() == null) {
-                if (queuePanel == null) queuePanel = new QueuePanel();
+            if (root.getRight() == null) {
+                if (queuePanel == null)
+                    queuePanel = new QueuePanel();
                 queuePanel.refresh();
                 root.setRight(queuePanel);
                 miniPlayerBar.setQueueActive(true);
@@ -169,7 +93,7 @@ public class MainScene {
                 miniPlayerBar.setQueueActive(false);
             }
         });
-        
+
         miniPlayerBar.setOnDetachAction(() -> {
             // Switch to Floating Player
             FloatingMiniPlayer floatingPlayer = new FloatingMiniPlayer(() -> {
@@ -178,11 +102,11 @@ public class MainScene {
                 stage.setIconified(false);
                 stage.toFront();
             });
-            
+
             // Position near current window or center?
             floatingPlayer.setX(stage.getX() + 50);
             floatingPlayer.setY(stage.getY() + 50);
-            
+
             floatingPlayer.show();
             stage.hide();
         });
@@ -194,17 +118,6 @@ public class MainScene {
 
     private void refreshLibrary(TableView<Track> table) {
         table.getItems().setAll(DatabaseManager.getAllTracks());
-    }
-
-    private void handleImport(Parent root, TableView<Track> table) {
-        DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Import Folder");
-        File dir = chooser.showDialog(root.getScene().getWindow());
-
-        if (dir != null) {
-            scanDirectory(dir);
-            refreshLibrary(table);
-        }
     }
 
     private void scanDirectory(File dir) {
@@ -219,51 +132,75 @@ public class MainScene {
             } else if (name.endsWith(".mp3") || name.endsWith(".wav") || name.endsWith(".m4a")
                     || name.endsWith(".flac")) {
                 System.out.println("Found track: " + f.getName());
-                Track t = new Track(
-                        UUID.randomUUID().toString(),
-                        f.getAbsolutePath(),
-                        f.getName(),
-                        "Unknown Artist",
-                        "Unknown Album",
-                        0);
+                Track t = new Track(UUID.randomUUID().toString(), f.getAbsolutePath(), f.getName(), "Unknown Artist",
+                        "Unknown Album", 0);
                 DatabaseManager.addTrack(t);
             }
         }
     }
 
-
+    private TableView<Track> libraryTable;
 
     private void createLibraryView(BorderPane root, Stage stage) {
+        // Main container for library
         libraryView = new VBox(20);
-        libraryView.setStyle("-fx-padding: 30; -fx-background-color: #0f0f13;");
+        libraryView.setPadding(new javafx.geometry.Insets(30));
+        libraryView.getStyleClass().add("content-view");
 
-        libraryTable = new TableView<>();
-
+        // Header
         HBox header = new HBox(20);
-        Label pageTitle = new Label("Library");
-        pageTitle.setStyle("-fx-font-size: 32px; -fx-font-weight: bold;");
+        header.setAlignment(Pos.CENTER_LEFT);
+        Label pageTitle = new Label("Songs");
+        pageTitle.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white;");
 
         Button importBtn = new Button("Import Folder");
-        importBtn.setOnAction(e -> handleImport(root, libraryTable));
+        importBtn.getStyleClass().add("button-primary");
+        importBtn.setOnAction(e -> handleImport(root));
 
         header.getChildren().addAll(pageTitle, importBtn);
 
+        // Table Content
+        libraryTable = new TableView<>();
         setupTableColumns(libraryTable);
 
-        refreshLibrary(libraryTable);
-
+        // Double click to play
         libraryTable.setRowFactory(tv -> {
             TableRow<Track> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && (!row.isEmpty())) {
                     Track rowData = row.getItem();
+                    PlayerController.getInstance().playTrack(rowData, true);
+                    // Update context
                     player.setPlaylistContext(libraryTable.getItems(), rowData);
                 }
             });
             return row;
         });
 
+        VBox.setVgrow(libraryTable, Priority.ALWAYS);
         libraryView.getChildren().addAll(header, libraryTable);
+
+        refreshLibrary();
+    }
+
+    private void refreshLibrary() {
+        if (libraryTable != null) {
+            libraryTable.getItems().setAll(DatabaseManager.getAllTracks());
+        }
+    }
+
+    // Refresh the grid with Album Cards
+
+    // New: Handle Import without TableView dependency
+    private void handleImport(Parent root) {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Import Folder");
+        File dir = chooser.showDialog(root.getScene().getWindow());
+
+        if (dir != null) {
+            scanDirectory(dir);
+            refreshLibrary();
+        }
     }
 
     private void setupTableColumns(TableView<Track> table) {
@@ -308,12 +245,14 @@ public class MainScene {
                         addToQueueItem.setOnAction(event -> {
                             Track track = getTableView().getItems().get(getIndex());
                             player.addToQueue(track);
-                            if (queuePanel != null) queuePanel.refresh();
+                            if (queuePanel != null)
+                                queuePanel.refresh();
                         });
                         playNextItem.setOnAction(event -> {
                             Track track = getTableView().getItems().get(getIndex());
                             player.playNextInQueue(track);
-                            if (queuePanel != null) queuePanel.refresh();
+                            if (queuePanel != null)
+                                queuePanel.refresh();
                         });
                         deleteItem.setOnAction(event -> {
                             Track track = getTableView().getItems().get(getIndex());
@@ -370,12 +309,14 @@ public class MainScene {
         if (libraryView == null)
             return;
         root.setCenter(libraryView);
-        refreshLibrary(libraryTable);
+        root.setCenter(libraryView);
+        refreshLibrary();
     }
 
     private void showPlaylists(BorderPane root) {
         VBox playlistsView = new VBox(20);
-        playlistsView.setStyle("-fx-padding: 30; -fx-background-color: #0f0f13;");
+        playlistsView.setPadding(new javafx.geometry.Insets(30));
+        playlistsView.getStyleClass().add("content-view");
 
         Label pageTitle = new Label("Playlists");
         pageTitle.setStyle("-fx-font-size: 32px; -fx-font-weight: bold;");
@@ -518,7 +459,8 @@ public class MainScene {
 
     private void showPlaylistTracks(Playlist playlist, BorderPane root) {
         VBox view = new VBox(20);
-        view.setStyle("-fx-padding: 30; -fx-background-color: #0f0f13;");
+        view.setPadding(new javafx.geometry.Insets(30));
+        view.getStyleClass().add("content-view");
 
         HBox header = new HBox(20);
         Label pageTitle = new Label(playlist.getName());
@@ -546,56 +488,6 @@ public class MainScene {
 
         view.getChildren().addAll(header, table);
         root.setCenter(view);
-    }
-
-    private void rebuildPlaylistDropdown(VBox playlistDropdown, BorderPane root) {
-        playlistDropdown.getChildren().clear();
-        for (Playlist pl : DatabaseManager.getAllPlaylists()) {
-            HBox item = new HBox(8);
-            item.setAlignment(Pos.CENTER_LEFT);
-
-            Button plBtn = new Button(pl.getName());
-            plBtn.setMaxWidth(Double.MAX_VALUE);
-            plBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: center-left;");
-            HBox.setHgrow(plBtn, Priority.ALWAYS);
-            plBtn.setOnAction(ev -> {
-                // Open playlist in main content but keep dropdown visible so items don't
-                // disappear when clicked
-                showPlaylistTracks(pl, root);
-
-                // Update selection visual: clear others and highlight this one
-                for (javafx.scene.Node node : playlistDropdown.getChildren()) {
-                    if (node instanceof HBox) {
-                        HBox h = (HBox) node;
-                        if (!h.getChildren().isEmpty() && h.getChildren().get(0) instanceof Button) {
-                            ((Button) h.getChildren().get(0)).setStyle(
-                                    "-fx-background-color: transparent; -fx-text-fill: white; -fx-alignment: center-left;");
-                        }
-                    }
-                }
-                plBtn.setStyle("-fx-background-color: #1f2937; -fx-text-fill: white; -fx-alignment: center-left;");
-            });
-
-            Button del = new Button("Delete");
-            del.setStyle("-fx-background-color: #7f1d1d; -fx-text-fill: white; -fx-font-size: 11px;");
-            del.setOnAction(ev -> {
-                Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete playlist '" + pl.getName() + "'?",
-                        ButtonType.OK, ButtonType.CANCEL);
-                Optional<ButtonType> res = confirm.showAndWait();
-                if (res.isPresent() && res.get() == ButtonType.OK) {
-                    boolean ok = DatabaseManager.deletePlaylist(pl.getId());
-                    if (ok) {
-                        rebuildPlaylistDropdown(playlistDropdown, root);
-                    } else {
-                        Alert err = new Alert(Alert.AlertType.ERROR, "Failed to delete playlist");
-                        err.showAndWait();
-                    }
-                }
-            });
-
-            item.getChildren().addAll(plBtn, del);
-            playlistDropdown.getChildren().add(item);
-        }
     }
 
     private void showCreatePlaylistDialog(Track track) {
@@ -720,5 +612,12 @@ public class MainScene {
             equalizerPanel = new EqualizerPanel();
         }
         root.setCenter(equalizerPanel);
+    }
+
+    private Button createNavButton(String text, String iconPath) {
+        Button btn = new Button(text);
+        btn.getStyleClass().add("nav-button");
+        btn.setMaxWidth(Double.MAX_VALUE);
+        return btn;
     }
 }

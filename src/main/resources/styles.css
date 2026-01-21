@@ -1,55 +1,620 @@
-/* Dark Mode Theme */
+/* =========================================================
+   VIBE Music Player - JavaFX Native Shell Stylesheet
+   Visual System: High-Contrast Dark Mode (Hybrid Architecture)
+   ========================================================= */
+
 .root {
-    -fx-base: #0f0f13; /* bg-main */
-    -fx-background-color: #0f0f13;
-    -fx-font-family: 'Segoe UI', sans-serif;
+    /* ==== Native Shell Palette ==== */
+    -shell-bg: #121212;
+    /* Deep Charcoal - Scene background */
+    -shell-border: #1E1E1E;
+    /* Slightly lighter - window borders */
+    -shell-surface: #18181B;
+    /* Zinc-900 - elevated surfaces */
+
+    /* ==== Accent Colors ==== */
+    -accent-primary: #5d38c2;
+    /* Purple - interactive elements */
+    -accent-hover: #7a52e0;
+    /* Lighter purple - hover state */
+    -accent-success: #22C55E;
+    /* Green-500 - success states */
+    -accent-danger: #F43F5E;
+    /* Rose-500 - alerts only */
+    -accent-muted: #4a2d9e;
+    /* Darker purple - muted accent */
+
+    /* ==== Text Hierarchy ==== */
+    -text-primary: #FFFFFF;
+    /* High emphasis - task headers */
+    -text-secondary: #E4E4E7;
+    /* Zinc-200 - data grid text */
+    -text-muted: #A1A1AA;
+    /* Zinc-400 - app title, low emphasis */
+    -text-subtle: #71717A;
+    /* Zinc-500 - status bar feedback */
+
+    /* ==== Border & Overlay ==== */
+    -border-color: rgba(255, 255, 255, 0.08);
+    -overlay-bg: rgba(24, 24, 27, 0.8);
+    /* For bridge components */
+
+    /* ==== Global Styles ==== */
+    -fx-base: -shell-bg;
+    -fx-background-color: -shell-bg;
+    -fx-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -fx-font-size: 14px;
 }
+
+/* =========================================================
+   TYPOGRAPHY HIERARCHY
+   ========================================================= */
 
 .label {
-    -fx-text-fill: white;
+    -fx-text-fill: -text-primary;
 }
 
+.label-secondary {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 13px;
+}
+
+.label-muted {
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 13px;
+}
+
+.label-subtle {
+    -fx-text-fill: -text-subtle;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-opacity: 0.9;
+}
+
+.h1 {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -text-primary;
+    -fx-letter-spacing: -0.02em;
+}
+
+.h2 {
+    -fx-font-size: 20px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -text-secondary;
+}
+
+.h3 {
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-text-fill: -text-muted;
+}
+
+/* =========================================================
+   BUTTONS (Clean, Flat Design)
+   ========================================================= */
+
 .button {
-    -fx-background-color: #3f3f46;
-    -fx-text-fill: white;
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-secondary;
+    -fx-background-radius: 6;
     -fx-cursor: hand;
+    -fx-padding: 8 16;
+    -fx-border-color: transparent;
 }
 
 .button:hover {
-    -fx-background-color: #52525b;
+    -fx-background-color: rgba(99, 102, 241, 0.1);
+    -fx-text-fill: -text-primary;
 }
 
-.text-field {
-    -fx-background-color: #202025; /* bg-panel */
+.button:pressed {
+    -fx-background-color: rgba(99, 102, 241, 0.2);
+}
+
+.button:focused {
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+}
+
+.button-primary {
+    -fx-background-color: -accent-primary;
     -fx-text-fill: white;
-    -fx-prompt-text-fill: #a1a1aa;
+    -fx-font-weight: 600;
+    -fx-background-radius: 6;
 }
 
-.table-view {
+.button-primary:hover {
+    -fx-background-color: -accent-hover;
+    -fx-effect: null;
+}
+
+.button-danger {
+    -fx-background-color: #7f1d1d;
+    -fx-text-fill: white;
+    -fx-font-weight: 600;
+    -fx-background-radius: 6;
+}
+
+.button-danger:hover {
+    -fx-background-color: #991b1b;
+}
+
+/* =========================================================
+   SIDEBAR (Native Shell Navigation)
+   ========================================================= */
+
+.sidebar {
+    -fx-background-color: -shell-bg;
+    -fx-padding: 24 16;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 1 0 0;
+}
+
+.nav-button {
     -fx-background-color: transparent;
+    -fx-text-fill: -text-muted;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12 16;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
+    -fx-text-fill: -text-secondary;
+}
+
+.nav-button.active {
+    -fx-background-color: rgba(99, 102, 241, 0.12);
+    -fx-text-fill: -text-primary;
+    -fx-font-weight: 600;
+    -fx-border-color: -accent-primary;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-radius: 0;
+}
+
+/* =========================================================
+   CONTENT VIEWS
+   ========================================================= */
+
+.content-view {
+    -fx-padding: 32;
+    -fx-background-color: -shell-bg;
+}
+
+/* =========================================================
+   CARDS (Card-on-Surface Approach)
+   ========================================================= */
+
+.card {
+    -fx-background-color: -shell-surface;
+    -fx-background-radius: 12;
+    -fx-padding: 16;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 12;
+}
+
+.card:hover {
+    -fx-background-color: derive(-shell-surface, 5%);
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 12, 0, 0, 4);
+}
+
+.album-card {
+    -fx-background-color: -shell-surface;
+    -fx-background-radius: 10;
+    -fx-padding: 16;
+    -fx-border-color: transparent;
+}
+
+.album-card:hover {
+    -fx-background-color: derive(-shell-surface, 8%);
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 12, 0, 0, 4);
+}
+
+/* =========================================================
+   PLAYER BAR (Bottom Controls)
+   ========================================================= */
+
+.player-bar {
+    -fx-background-color: -shell-bg;
+    -fx-border-color: -border-color;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 16 24;
+}
+
+.player-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-muted;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-padding: 8;
+    -fx-background-radius: 50%;
+}
+
+.player-btn:hover {
+    -fx-text-fill: -text-primary;
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+}
+
+.circle-play-btn {
+    -fx-background-color: -accent-primary;
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-cursor: hand;
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-max-width: 48px;
+    -fx-max-height: 48px;
+    -fx-background-radius: 50%;
+    -fx-alignment: center;
+    -fx-padding: 0;
+}
+
+.circle-play-btn:hover {
+    -fx-background-color: -accent-hover;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.4), 12, 0, 0, 0);
+}
+
+/* =========================================================
+   SLIDERS (Progress & Volume)
+   ========================================================= */
+
+.slider .track {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-pref-height: 4px;
+    -fx-background-radius: 2px;
+}
+
+.slider .track-progress {
+    -fx-background-color: -accent-primary;
+    -fx-background-radius: 2px;
+    -fx-effect: null;
+}
+
+.slider .thumb {
+    -fx-background-color: white;
+    -fx-pref-width: 12px;
+    -fx-pref-height: 12px;
+    -fx-background-radius: 50%;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 6, 0, 0, 2);
+}
+
+.slider:hover .thumb {
+    -fx-scale-x: 1.15;
+    -fx-scale-y: 1.15;
+}
+
+/* =========================================================
+   SCROLLPANE & SCROLLBAR (Synchronized with React)
+   ========================================================= */
+
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8px;
+}
+
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-height: 8px;
+}
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-background-radius: 4px;
+}
+
+.scroll-bar:vertical .thumb:hover,
+.scroll-bar:horizontal .thumb:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.25);
+}
+
+.scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
+/* =========================================================
+   CONTEXT MENU (Bridge Component - with blur effect)
+   ========================================================= */
+
+.context-menu {
+    -fx-background-color: -shell-surface;
+    -fx-background-radius: 8;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-padding: 4 0;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 16, 0, 0, 6);
+}
+
+.menu-item {
+    -fx-background-color: transparent;
+    -fx-padding: 10 16;
+}
+
+.menu-item .label {
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 13px;
+}
+
+.menu-item:hover {
+    -fx-background-color: -accent-primary;
+}
+
+.menu-item:hover .label {
+    -fx-text-fill: white;
+}
+
+.menu-item:focused {
+    -fx-background-color: rgba(99, 102, 241, 0.2);
+}
+
+/* =========================================================
+   TABLE VIEW & LIST VIEW (Data Grid Styling)
+   ========================================================= */
+
+.table-view,
+.list-view {
+    -fx-background-color: transparent;
+    -fx-base: -shell-bg;
+    -fx-control-inner-background: -shell-bg;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
 }
 
 .table-view .column-header-background {
-    -fx-background-color: transparent;
+    -fx-background-color: -shell-bg;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 0;
 }
 
 .table-view .column-header {
     -fx-background-color: transparent;
+    -fx-size: 36px;
 }
 
-.table-row-cell {
+.table-view .column-header .label {
+    -fx-text-fill: -text-subtle;
+    -fx-font-weight: 600;
+    -fx-font-size: 11px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 8;
+    text-transform: uppercase;
+}
+
+.table-view .filler {
     -fx-background-color: transparent;
-    -fx-text-fill: #a1a1aa;
 }
 
-.table-row-cell:odd {
-    -fx-background-color: rgba(255,255,255,0.02);
+.table-row-cell,
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: rgba(255, 255, 255, 0.03);
+    -fx-padding: 6 0;
+    -fx-text-fill: -text-secondary;
+    -fx-font-size: 13px;
 }
 
-.table-row-cell:hover {
-    -fx-background-color: rgba(255,255,255,0.05);
+.table-row-cell:hover,
+.list-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.04);
 }
 
-.table-row-cell:selected {
-    -fx-background-color: rgba(139, 92, 246, 0.2); /* primary with opacity */
+.table-row-cell:selected,
+.list-cell:selected {
+    -fx-background-color: rgba(99, 102, 241, 0.15);
+    -fx-text-fill: -text-primary;
+    -fx-border-color: transparent;
+}
+
+.table-row-cell:selected:focused,
+.list-cell:selected:focused {
+    -fx-background-color: rgba(99, 102, 241, 0.2);
+    -fx-border-color: -accent-primary;
+    -fx-border-width: 0 0 0 2;
+}
+
+.table-view .placeholder .label {
+    -fx-text-fill: -text-subtle;
+}
+
+.table-cell {
+    -fx-text-fill: -text-secondary;
+    -fx-padding: 0 8;
+}
+
+/* =========================================================
+   TEXT FIELDS & INPUTS
+   ========================================================= */
+
+.text-field,
+.text-area {
+    -fx-background-color: -shell-surface;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: -text-primary;
+    -fx-prompt-text-fill: -text-subtle;
+    -fx-padding: 10 12;
+}
+
+.text-field:focused,
+.text-area:focused {
+    -fx-border-color: -accent-primary;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.2), 8, 0, 0, 0);
+}
+
+/* =========================================================
+   DIALOGS (Native/Web Bridge - Alert dialogs)
+   ========================================================= */
+
+.dialog-pane {
+    -fx-background-color: -shell-surface;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 20;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: transparent;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -text-primary;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+}
+
+.dialog-pane .content {
+    -fx-text-fill: -text-secondary;
+}
+
+.dialog-pane .button-bar {
+    -fx-padding: 16 0 0 0;
+}
+
+/* =========================================================
+   TOOLTIPS
+   ========================================================= */
+
+.tooltip {
+    -fx-background-color: -shell-surface;
+    -fx-text-fill: -text-secondary;
+    -fx-background-radius: 6;
+    -fx-border-color: -border-color;
+    -fx-border-radius: 6;
+    -fx-padding: 8 12;
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0, 0, 2);
+}
+
+/* =========================================================
+   WINDOW CONTROLS
+   ========================================================= */
+
+.window-controls {
+    -fx-background-color: -shell-bg;
+    -fx-padding: 8 16;
+    -fx-border-color: -border-color;
+    -fx-border-width: 0 0 1 0;
+}
+
+.window-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-subtle;
+    -fx-min-width: 32px;
+    -fx-min-height: 32px;
+    -fx-background-radius: 6;
+}
+
+.window-btn:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-text-fill: -text-primary;
+}
+
+.window-btn-close:hover {
+    -fx-background-color: #dc2626;
+    -fx-text-fill: white;
+}
+
+/* =========================================================
+   UTILITY CLASSES
+   ========================================================= */
+
+.bg-surface {
+    -fx-background-color: -shell-surface;
+}
+
+.bg-primary {
+    -fx-background-color: -shell-bg;
+}
+
+.text-accent {
+    -fx-text-fill: -accent-primary;
+}
+
+.text-success {
+    -fx-text-fill: -accent-success;
+}
+
+.text-danger {
+    -fx-text-fill: -accent-danger;
+}
+
+.rounded {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.rounded-lg {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+}
+
+/* Spacing based on 4px base unit */
+.p-2 {
+    -fx-padding: 8;
+}
+
+.p-3 {
+    -fx-padding: 12;
+}
+
+.p-4 {
+    -fx-padding: 16;
+}
+
+.p-6 {
+    -fx-padding: 24;
+}
+
+.p-8 {
+    -fx-padding: 32;
+}
+
+.gap-2 {
+    -fx-spacing: 8;
+}
+
+.gap-3 {
+    -fx-spacing: 12;
+}
+
+.gap-4 {
+    -fx-spacing: 16;
+}
+
+.gap-6 {
+    -fx-spacing: 24;
 }

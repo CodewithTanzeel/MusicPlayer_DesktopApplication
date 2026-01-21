@@ -22,27 +22,29 @@ public class PlayerController {
     // State
     private DoublyLinkedList<Track> playlist = new DoublyLinkedList<>(); // Main context
     private DoublyLinkedList.Node<Track> currentNode;
-    
+
     private PlayQueue<Track> queue = new PlayQueue<>(); // FR-4
     private HistoryStack<Track> history = new HistoryStack<>(); // FR-5
 
     private MediaPlayer mediaPlayer;
-    
+
     // Properties for UI Binding
     private ObjectProperty<Track> currentTrack = new SimpleObjectProperty<>();
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private DoubleProperty currentTime = new SimpleDoubleProperty(0);
     private DoubleProperty duration = new SimpleDoubleProperty(0);
     private DoubleProperty volume = new SimpleDoubleProperty(0.5);
-    
+
     // Equalizer
     private boolean equalizerEnabled = false;
     private double[] equalizerGains = new double[10]; // Default 10 bands
 
-    private PlayerController() {}
+    private PlayerController() {
+    }
 
     public static PlayerController getInstance() {
-        if (instance == null) instance = new PlayerController();
+        if (instance == null)
+            instance = new PlayerController();
         return instance;
     }
 
@@ -50,10 +52,12 @@ public class PlayerController {
         playTrack(track, true);
     }
 
-    // Overload: allow skipping adding the current track to history when set to false
+    // Overload: allow skipping adding the current track to history when set to
+    // false
     public void playTrack(Track track, boolean pushToHistory) {
         // Stop previous
         if (mediaPlayer != null) {
+            mediaPlayer.volumeProperty().unbind();
             mediaPlayer.stop();
             mediaPlayer.dispose();
         }
@@ -68,22 +72,22 @@ public class PlayerController {
             File file = new File(track.getFilepath());
             Media media = new Media(file.toURI().toString());
             mediaPlayer = new MediaPlayer(media);
-            
+
             mediaPlayer.currentTimeProperty().addListener((obs, oldV, newV) -> {
                 currentTime.set(newV.toSeconds());
             });
-            
+
             mediaPlayer.setOnReady(() -> {
                 duration.set(mediaPlayer.getMedia().getDuration().toSeconds());
                 mediaPlayer.play();
                 isPlaying.set(true);
             });
-            
+
             mediaPlayer.setOnEndOfMedia(this::playNext);
-            
+
             // Bind volume
             mediaPlayer.volumeProperty().bind(volume);
-            
+
             // Apply Equalizer
             applyEqualizer();
 
@@ -92,7 +96,7 @@ public class PlayerController {
             System.err.println("Error playing file: " + e.getMessage());
         }
     }
-    
+
     // Set the main playlist context
     public void setPlaylistContext(java.util.List<Track> tracks, Track startTrack) {
         playlist.clear();
@@ -126,7 +130,8 @@ public class PlayerController {
     }
 
     public void togglePlay() {
-        if (mediaPlayer == null) return;
+        if (mediaPlayer == null)
+            return;
         if (isPlaying.get()) {
             mediaPlayer.pause();
             isPlaying.set(false);
@@ -158,7 +163,8 @@ public class PlayerController {
         // FR-5: Check History first (Back button behavior)
         if (!history.isEmpty()) {
             Track prev = history.pop();
-            // Try to find and sync currentNode in playlist to keep the linked-list context consistent
+            // Try to find and sync currentNode in playlist to keep the linked-list context
+            // consistent
             DoublyLinkedList.Node<Track> iter = playlist.getHead();
             while (iter != null) {
                 if (iter.value.getId().equals(prev.getId())) {
@@ -179,33 +185,47 @@ public class PlayerController {
         queue.enqueue(track);
         saveQueueState();
     }
-    
+
     public void playNextInQueue(Track track) {
         queue.addFirst(track);
         saveQueueState();
     }
-    
+
     public void removeFromQueue(int index) {
         queue.remove(index);
         saveQueueState();
     }
-    
+
     public void moveQueueItem(int from, int to) {
         queue.move(from, to);
         saveQueueState();
     }
-    
+
     /** Returns a copy of the current queue list. */
     public java.util.List<Track> getQueueList() {
         return queue.getAll();
     }
 
     // Getters for properties
-    public ObjectProperty<Track> currentTrackProperty() { return currentTrack; }
-    public BooleanProperty isPlayingProperty() { return isPlaying; }
-    public DoubleProperty currentTimeProperty() { return currentTime; }
-    public DoubleProperty durationProperty() { return duration; }
-    public DoubleProperty volumeProperty() { return volume; }
+    public ObjectProperty<Track> currentTrackProperty() {
+        return currentTrack;
+    }
+
+    public BooleanProperty isPlayingProperty() {
+        return isPlaying;
+    }
+
+    public DoubleProperty currentTimeProperty() {
+        return currentTime;
+    }
+
+    public DoubleProperty durationProperty() {
+        return duration;
+    }
+
+    public DoubleProperty volumeProperty() {
+        return volume;
+    }
 
     /** Pause playback (keeps current position). */
     public void pause() {
@@ -225,7 +245,8 @@ public class PlayerController {
 
     /** Seek to a specific time (in seconds) within the current track. */
     public void seek(double seconds) {
-        if (mediaPlayer == null) return;
+        if (mediaPlayer == null)
+            return;
         try {
             mediaPlayer.seek(javafx.util.Duration.seconds(seconds));
             // Update current time property immediately so UI reflects position
@@ -236,13 +257,19 @@ public class PlayerController {
     }
 
     // Equalizer Methods
-    public boolean isEqualizerEnabled() { return equalizerEnabled; }
+    public boolean isEqualizerEnabled() {
+        return equalizerEnabled;
+    }
+
     public void setEqualizerEnabled(boolean enabled) {
         this.equalizerEnabled = enabled;
         applyEqualizer();
     }
 
-    public double[] getEqualizerGains() { return equalizerGains; }
+    public double[] getEqualizerGains() {
+        return equalizerGains;
+    }
+
     public void setEqualizerGain(int bandIndex, double gain) {
         if (bandIndex >= 0 && bandIndex < equalizerGains.length) {
             equalizerGains[bandIndex] = gain;
@@ -251,11 +278,12 @@ public class PlayerController {
     }
 
     private void applyEqualizer() {
-        if (mediaPlayer == null) return;
-        
+        if (mediaPlayer == null)
+            return;
+
         javafx.scene.media.AudioEqualizer eq = mediaPlayer.getAudioEqualizer();
         eq.setEnabled(equalizerEnabled);
-        
+
         if (equalizerEnabled) {
             java.util.List<javafx.scene.media.EqualizerBand> bands = eq.getBands();
             for (int i = 0; i < bands.size() && i < equalizerGains.length; i++) {

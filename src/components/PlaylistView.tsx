@@ -62,70 +62,70 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
             setLoadingPlaylistId(null);
         }
         setExpandedPlaylistId(id);
-    }; 
+    };
 
     if (!playlistId) {
         return (
             <div className="p-8">
-                <h2 className="text-3xl font-bold text-white mb-8">All Playlists</h2>
+                <h2 className="text-3xl font-bold text-[#FFFFFF] mb-8">All Playlists</h2>
                 {loading ? (
-                    <div className="text-zinc-500">Loading...</div>
+                    <div className="text-[#71717A]">Loading...</div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {playlists.map(p => (
                             <div key={p.id} className="col-span-1 w-full">
                                 <div
                                     onClick={() => togglePlaylist(p.id)}
-                                    className={`bg-zinc-800/50 p-6 rounded-lg cursor-pointer transition-all hover:scale-105 group ${expandedPlaylistId === p.id ? 'bg-zinc-800 ring-2 ring-primary' : 'hover:bg-zinc-800'}`}
+                                    className={`bg-[#1F1F23] border border-white/[0.06] p-6 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] group ${expandedPlaylistId === p.id ? 'bg-[#27272A] ring-2 ring-[#6366F1]' : 'hover:bg-[#27272A]'}`}
                                     role="button"
                                     aria-expanded={expandedPlaylistId === p.id}
                                 >
-                                    <div className="w-full aspect-square bg-zinc-700/50 rounded-md mb-4 flex items-center justify-center">
-                                        <Music size={48} className="text-zinc-600 group-hover:text-primary transition-colors" />
+                                    <div className="w-full aspect-square bg-gradient-to-br from-indigo-600/20 to-[#27272A] rounded-lg mb-4 flex items-center justify-center">
+                                        <Music size={48} className="text-[#71717A] group-hover:text-[#6366F1] transition-colors" />
                                     </div>
 
                                     <div className="flex items-center justify-between">
                                         <div className="min-w-0">
-                                            <h3 className="font-bold text-white truncate">{p.name}</h3>
-                                            <p className="text-sm text-zinc-500">Playlist</p>
+                                            <h3 className="font-bold text-[#FFFFFF] truncate">{p.name}</h3>
+                                            <p className="text-sm text-[#71717A]">Playlist</p>
                                         </div>
 
-                                        <ChevronDown size={20} className={`ml-4 transition-transform duration-200 ${expandedPlaylistId === p.id ? 'rotate-180 text-primary' : 'text-zinc-500 group-hover:text-primary'}`} />
+                                        <ChevronDown size={20} className={`ml-4 transition-transform duration-200 ${expandedPlaylistId === p.id ? 'rotate-180 text-[#6366F1]' : 'text-[#71717A] group-hover:text-[#6366F1]'}`} />
                                     </div>
                                 </div>
 
                                 {/* Expanded dropdown */}
                                 {expandedPlaylistId === p.id && (
-                                    <div className="col-span-full mt-2 bg-zinc-900/60 p-4 rounded-md">
+                                    <div className="col-span-full mt-2 bg-[#18181B] border border-white/[0.06] p-4 rounded-lg">
                                         {loadingPlaylistId === p.id ? (
-                                            <div className="text-zinc-500">Loading...</div>
+                                            <div className="text-[#71717A]">Loading...</div>
                                         ) : (
                                             <>
                                                 {playlistTracksMap[p.id]?.length ? (
-                                                    <div className="space-y-2 max-h-60 overflow-y-auto text-sm text-zinc-300">
+                                                    <div className="space-y-2 max-h-60 overflow-y-auto text-sm text-[#E4E4E7]">
                                                         {playlistTracksMap[p.id].map((t, i) => (
-                                                            <div key={`${t.id}-${i}`} className="flex items-center justify-between py-1 border-b border-white/5">
+                                                            <div key={`${t.id}-${i}`} className="flex items-center justify-between py-1 border-b border-white/[0.04]">
                                                                 <div className="flex items-center gap-3 truncate">
-                                                                    <div className="font-medium truncate">{t.title}</div>
-                                                                    <div className="text-xs text-zinc-500 truncate">{t.artist}</div>
+                                                                    <div className="font-medium truncate text-[#FFFFFF]">{t.title}</div>
+                                                                    <div className="text-xs text-[#71717A] truncate">{t.artist}</div>
                                                                 </div>
-                                                                <div className="text-xs text-zinc-400">{formatTime(t.duration)}</div>
+                                                                <div className="text-xs text-[#A1A1AA]">{formatTime(t.duration)}</div>
                                                             </div>
                                                         ))}
                                                     </div>
                                                 ) : (
-                                                    <div className="text-zinc-500">No tracks in this playlist.</div>
+                                                    <div className="text-[#71717A]">No tracks in this playlist.</div>
                                                 )}
                                                 <div className="mt-3 flex gap-2">
                                                     <button
                                                         onClick={() => onNavigate(`playlist:${p.id}`)}
-                                                        className="text-sm text-primary hover:underline"
+                                                        className="text-sm text-[#6366F1] hover:text-[#818CF8] hover:underline transition-colors"
                                                     >
                                                         Open full view
                                                     </button>
                                                     <button
                                                         onClick={() => { setExpandedPlaylistId(null); }}
-                                                        className="text-sm text-zinc-400 hover:text-white hover:underline"
+                                                        className="text-sm text-[#A1A1AA] hover:text-white hover:underline transition-colors"
                                                     >
                                                         Close
                                                     </button>
@@ -137,7 +137,7 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
                             </div>
                         ))}
                         {playlists.length === 0 && (
-                            <div className="col-span-full text-zinc-500 text-center py-10">
+                            <div className="col-span-full text-[#71717A] text-center py-10">
                                 No playlists created yet. Go to Library to create one!
                             </div>
                         )}
@@ -153,18 +153,18 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
             <div className="mb-8">
                 <button
                     onClick={() => onNavigate('playlists')}
-                    className="text-zinc-400 hover:text-white flex items-center gap-2 mb-4 hover:underline"
+                    className="text-[#A1A1AA] hover:text-white flex items-center gap-2 mb-4 hover:underline transition-colors"
                 >
                     <ArrowLeft size={16} /> Back to Playlists
                 </button>
                 <div className="flex items-end gap-6">
-                    <div className="w-52 h-52 bg-gradient-to-br from-violet-800 to-indigo-900 shadow-2xl rounded-lg flex items-center justify-center">
+                    <div className="w-52 h-52 bg-gradient-to-br from-indigo-600 to-indigo-900 shadow-2xl rounded-xl flex items-center justify-center">
                         <Music size={64} className="text-white/20" />
                     </div>
                     <div>
-                        <span className="uppercase text-xs font-bold tracking-wider text-white">Playlist</span>
-                        <h1 className="text-5xl font-bold text-white mt-2 mb-4">{playlistName}</h1>
-                        <div className="text-sm text-zinc-400">
+                        <span className="uppercase text-xs font-bold tracking-wider text-[#A1A1AA]">Playlist</span>
+                        <h1 className="text-5xl font-bold text-[#FFFFFF] mt-2 mb-4">{playlistName}</h1>
+                        <div className="text-sm text-[#A1A1AA]">
                             {tracks.length} songs
                         </div>
                     </div>
@@ -172,7 +172,7 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
             </div>
 
             {/* Track List */}
-            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-sm font-medium text-zinc-400 border-b border-white/5 uppercase tracking-wider mb-2">
+            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-[#71717A] border-b border-white/[0.08] uppercase tracking-wider mb-2">
                 <div className="col-span-1">#</div>
                 <div className="col-span-5">Title</div>
                 <div className="col-span-3">Album</div>
@@ -181,22 +181,22 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
             </div>
 
             {loading ? (
-                <div className="text-zinc-500 mt-10 text-center">Loading Tracks...</div>
+                <div className="text-[#71717A] mt-10 text-center">Loading Tracks...</div>
             ) : (
                 <div className="space-y-1">
                     {tracks.map((track, i) => {
                         const isCurrent = currentTrack?.id === track.id;
                         return (
                             <div
-                                key={`${track.id}-${i}`} // Composite key as tracks can theoretically be dupes in playlists?
-                                className={`group grid grid-cols-12 gap-4 px-4 py-3 rounded-md items-center hover:bg-white/5 transition-colors ${isCurrent ? 'bg-white/10 text-primary' : 'text-zinc-400'
+                                key={`${track.id}-${i}`}
+                                className={`group grid grid-cols-12 gap-4 px-4 py-3 rounded-lg items-center hover:bg-white/[0.04] transition-colors duration-200 ${isCurrent ? 'bg-indigo-500/10 text-[#6366F1]' : 'text-[#A1A1AA]'
                                     }`}
                                 onDoubleClick={() => playTrack(track, tracks)}
                             >
                                 <div className="col-span-1 font-medium relative">
                                     <span className="group-hover:hidden">{i + 1}</span>
                                     <button
-                                        className="hidden group-hover:block text-white"
+                                        className="hidden group-hover:block text-white hover:text-[#6366F1] transition-colors"
                                         onClick={() => playTrack(track, tracks)}
                                     >
                                         <Play size={16} fill="currentColor" />
@@ -205,20 +205,20 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
 
                                 <div className="col-span-5 flex items-center gap-3 overflow-hidden">
                                     <div className="flex flex-col truncate">
-                                        <span className={`truncate font-medium ${isCurrent ? 'text-violet-400' : 'text-white'}`}>
+                                        <span className={`truncate font-medium ${isCurrent ? 'text-[#6366F1]' : 'text-[#FFFFFF]'}`}>
                                             {track.title}
                                         </span>
-                                        <span className="truncate text-xs text-zinc-500">
+                                        <span className="truncate text-xs text-[#71717A]">
                                             {track.artist}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="col-span-3 truncate text-sm">
+                                <div className="col-span-3 truncate text-sm text-[#A1A1AA]">
                                     {track.album}
                                 </div>
 
-                                <div className="col-span-2 text-sm text-zinc-600">
+                                <div className="col-span-2 text-sm text-[#71717A]">
                                     -
                                 </div>
 
@@ -229,7 +229,7 @@ export const PlaylistView = ({ playlistId, onNavigate }: PlaylistViewProps) => {
                         );
                     })}
                     {tracks.length === 0 && (
-                        <div className="text-zinc-500 py-10 text-center">This playlist is empty.</div>
+                        <div className="text-[#71717A] py-10 text-center">This playlist is empty.</div>
                     )}
                 </div>
             )}

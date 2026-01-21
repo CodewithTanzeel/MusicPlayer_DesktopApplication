@@ -8,12 +8,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.Cursor;
+import javafx.scene.shape.Rectangle;
 
-public class MiniPlayerBar extends HBox {
+public class MiniPlayerBar extends BorderPane {
 
     private PlayerController player = PlayerController.getInstance();
     private ImageView coverView;
@@ -22,6 +25,7 @@ public class MiniPlayerBar extends HBox {
     private Button playBtn;
     private Slider progress;
     private Label timeLabel;
+    private Label totalTimeLabel; // Promoted field
     private Slider volumeSlider;
     private Button queueBtn;
     private Button detachBtn;
@@ -33,9 +37,7 @@ public class MiniPlayerBar extends HBox {
 
     public MiniPlayerBar() {
         setPrefHeight(90);
-        setAlignment(Pos.CENTER);
-        setStyle("-fx-background-color: #18181b; -fx-border-color: #27272a; -fx-border-width: 1 0 0 0; -fx-padding: 10 30;");
-        setSpacing(20);
+        getStyleClass().add("player-bar");
 
         initializeUI();
         setupListeners();
@@ -43,83 +45,139 @@ public class MiniPlayerBar extends HBox {
 
     private void initializeUI() {
         // --- 1. Track Info (Left) ---
+        HBox trackSection = new HBox(16);
+        trackSection.setAlignment(Pos.CENTER_LEFT);
+
         coverView = new ImageView();
-        coverView.setFitHeight(60);
-        coverView.setFitWidth(60);
+        coverView.setFitHeight(56);
+        coverView.setFitWidth(56);
         coverView.setPreserveRatio(true);
         coverView.setSmooth(true);
         coverView.setCursor(Cursor.HAND);
+
+        Rectangle clip = new Rectangle(56, 56);
+        clip.setArcWidth(8);
+        clip.setArcHeight(8);
+        coverView.setClip(clip);
+
         coverView.setOnMouseClicked(e -> {
-            if (onNowPlayingClick != null) onNowPlayingClick.run();
+            if (onNowPlayingClick != null)
+                onNowPlayingClick.run();
         });
 
-        VBox trackInfo = new VBox(5);
-        trackInfo.setPrefWidth(250);
-        trackTitle = new Label("-");
-        trackTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: white;");
-        trackArtist = new Label("-");
-        trackArtist.setStyle("-fx-text-fill: #a1a1aa;");
-        trackInfo.getChildren().addAll(trackTitle, trackArtist);
+        VBox trackInfo = new VBox(4);
+        trackInfo.setAlignment(Pos.CENTER_LEFT);
 
+        trackTitle = new Label("No Track");
+        trackTitle.getStyleClass().add("label");
+        trackTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        trackArtist = new Label("Select a song");
+        trackArtist.getStyleClass().add("label-secondary");
+
+        trackInfo.getChildren().addAll(trackTitle, trackArtist);
+        trackSection.getChildren().addAll(coverView, trackInfo);
+
+        // Wrap Left in a container with fixed width to balance the Right side
+        StackPane leftContainer = new StackPane(trackSection);
+        leftContainer.setAlignment(Pos.CENTER_LEFT);
+        leftContainer.setPrefWidth(300); // FIXED WIDTH
+        leftContainer.setMinWidth(300);
+        leftContainer.setMaxWidth(300);
 
         // --- 2. Center Controls (Progress + Buttons) ---
-        HBox btns = new HBox(15);
-        btns.setAlignment(Pos.CENTER);
-        Button prevBtn = new Button("⏮");
-        playBtn = new Button("▶");
-        Button nextBtn = new Button("⏭");
+        VBox centerSection = new VBox(8);
+        centerSection.setAlignment(Pos.CENTER);
 
-        // Styling
-        String btnStyle = "-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: #3f3f46; -fx-border-radius: 4;";
-        prevBtn.setStyle(btnStyle);
-        playBtn.setStyle(btnStyle);
-        nextBtn.setStyle(btnStyle);
+        HBox btns = new HBox(24);
+        btns.setAlignment(Pos.CENTER);
+
+        Button shuffleBtn = new Button("🔀");
+        shuffleBtn.getStyleClass().add("player-btn");
+        shuffleBtn.setStyle("-fx-font-size: 14px;"); // Smaller secondary icon
+
+        Button prevBtn = new Button("⏮");
+        prevBtn.getStyleClass().add("player-btn");
+
+        playBtn = new Button("▶");
+        playBtn.getStyleClass().add("circle-play-btn"); // Large play button
+
+        Button nextBtn = new Button("⏭");
+        nextBtn.getStyleClass().add("player-btn");
+
+        Button repeatBtn = new Button("🔁");
+        repeatBtn.getStyleClass().add("player-btn");
+        repeatBtn.setStyle("-fx-font-size: 14px;");
 
         prevBtn.setOnAction(e -> player.playPrevious());
         playBtn.setOnAction(e -> player.togglePlay());
         nextBtn.setOnAction(e -> player.playNext());
 
-        btns.getChildren().addAll(prevBtn, playBtn, nextBtn);
+        btns.getChildren().addAll(shuffleBtn, prevBtn, playBtn, nextBtn, repeatBtn);
 
-        VBox progressBox = new VBox(5);
+        HBox progressBox = new HBox(12);
         progressBox.setAlignment(Pos.CENTER);
-        progress = new Slider();
-        progress.setPrefWidth(300);
-        timeLabel = new Label("0:00 / 0:00");
-        timeLabel.setStyle("-fx-text-fill: #a1a1aa; -fx-font-size: 10px;");
-        progressBox.getChildren().addAll(btns, progress, timeLabel);
 
+        Label currentTime = new Label("0:00");
+        currentTime.getStyleClass().add("label-tertiary");
+        currentTime.setMinWidth(40);
+        currentTime.setAlignment(Pos.CENTER_RIGHT);
+
+        progress = new Slider();
+        progress.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(progress, Priority.ALWAYS);
+        progress.setMinWidth(300); // Ensure minimal width for slider
+
+        totalTimeLabel = new Label("0:00");
+        totalTimeLabel.getStyleClass().add("label-tertiary");
+        totalTimeLabel.setMinWidth(40);
+        totalTimeLabel.setAlignment(Pos.CENTER_LEFT);
+
+        progressBox.getChildren().addAll(currentTime, progress, totalTimeLabel);
+        timeLabel = currentTime;
+
+        centerSection.getChildren().addAll(btns, progressBox);
 
         // --- 3. Right Controls (Volume + Queue + Detach) ---
-        HBox rightControls = new HBox(10);
+        HBox rightControls = new HBox(16);
         rightControls.setAlignment(Pos.CENTER_RIGHT);
-        
-        Label volLabel = new Label("Vol");
-        volLabel.setStyle("-fx-text-fill: #a1a1aa;");
-        
+
+        Label volIcon = new Label("🔊");
+        volIcon.getStyleClass().add("label-secondary");
+
         volumeSlider = new Slider(0, 1, 0.5);
         volumeSlider.setPrefWidth(100);
         volumeSlider.valueProperty().bindBidirectional(player.volumeProperty());
 
-        queueBtn = new Button("Queue");
-        queueBtn.setStyle(btnStyle);
+        queueBtn = new Button("☰");
+        queueBtn.getStyleClass().add("player-btn");
+        queueBtn.setStyle("-fx-font-size: 16px;");
         queueBtn.setOnAction(e -> {
-            if (onQueueToggle != null) onQueueToggle.run();
+            if (onQueueToggle != null)
+                onQueueToggle.run();
         });
-        
-        detachBtn = new Button("↗"); // Detach icon
-        detachBtn.setStyle(btnStyle + " -fx-font-size: 14px;");
-        detachBtn.setTooltip(new javafx.scene.control.Tooltip("Switch to Floating Player"));
+
+        detachBtn = new Button("↗");
+        detachBtn.getStyleClass().add("player-btn");
+        detachBtn.setStyle("-fx-font-size: 14px;");
         detachBtn.setOnAction(e -> {
-            if (onDetachAction != null) onDetachAction.run();
+            if (onDetachAction != null)
+                onDetachAction.run();
         });
 
-        rightControls.getChildren().addAll(volLabel, volumeSlider, queueBtn, detachBtn);
+        rightControls.getChildren().addAll(volIcon, volumeSlider, queueBtn, detachBtn);
 
-        // Add all sections to bar
-        getChildren().addAll(coverView, trackInfo, progressBox, rightControls);
-        HBox.setHgrow(progressBox, Priority.ALWAYS);
-        HBox.setHgrow(rightControls, Priority.NEVER);
+        // Wrap Right in a container with SAME fixed width as Left
+        StackPane rightContainer = new StackPane(rightControls);
+        rightContainer.setAlignment(Pos.CENTER_RIGHT);
+        rightContainer.setPrefWidth(300); // FIXED WIDTH MATCHING LEFT
+        rightContainer.setMinWidth(300);
+        rightContainer.setMaxWidth(300);
+
+        // --- Assembly ---
+        setLeft(leftContainer);
+        setCenter(centerSection);
+        setRight(rightContainer);
     }
 
     private void setupListeners() {
@@ -143,11 +201,12 @@ public class MiniPlayerBar extends HBox {
             if (!progress.isValueChanging()) {
                 progress.setValue(time.doubleValue());
             }
-            timeLabel.setText(formatTime(time.doubleValue()) + " / " + formatTime(player.durationProperty().get()));
+            timeLabel.setText(formatTime(time.doubleValue()));
         });
 
         player.durationProperty().addListener((obs, old, dur) -> {
             progress.setMax(dur.doubleValue());
+            totalTimeLabel.setText(formatTime(dur.doubleValue()));
         });
 
         // Seek Logic
@@ -162,11 +221,13 @@ public class MiniPlayerBar extends HBox {
             if (isChanging) {
                 isDragging[0] = true;
                 wasPlayingDuringDrag[0] = player.isPlayingProperty().get();
-                if (wasPlayingDuringDrag[0]) player.pause();
+                if (wasPlayingDuringDrag[0])
+                    player.pause();
             } else {
                 if (isDragging[0]) {
                     player.seek(progress.getValue());
-                    if (wasPlayingDuringDrag[0]) player.play();
+                    if (wasPlayingDuringDrag[0])
+                        player.play();
                     isDragging[0] = false;
                 }
             }
@@ -175,35 +236,50 @@ public class MiniPlayerBar extends HBox {
         progress.setOnMousePressed(e -> {
             isDragging[0] = true;
             wasPlayingDuringDrag[0] = player.isPlayingProperty().get();
-            if (wasPlayingDuringDrag[0]) player.pause();
+            if (wasPlayingDuringDrag[0])
+                player.pause();
         });
 
         progress.setOnMouseReleased(e -> {
             if (!progress.isValueChanging()) {
                 player.seek(progress.getValue());
-                if (wasPlayingDuringDrag[0]) player.play();
+                if (wasPlayingDuringDrag[0])
+                    player.play();
                 isDragging[0] = false;
             }
         });
     }
 
-    private String formatTime(double seconds) {
-        int m = (int) seconds / 60;
-        int s = (int) seconds % 60;
-        return String.format("%d:%02d", m, s);
-    }
-    
     // Setters for external actions
-    public void setOnQueueToggle(Runnable action) { this.onQueueToggle = action; }
-    public void setOnNowPlayingClick(Runnable action) { this.onNowPlayingClick = action; }
-    public void setOnDetachAction(Runnable action) { this.onDetachAction = action; }
-    
+    public void setOnQueueToggle(Runnable action) {
+        this.onQueueToggle = action;
+    }
+
+    public void setOnNowPlayingClick(Runnable action) {
+        this.onNowPlayingClick = action;
+    }
+
+    public void setOnDetachAction(Runnable action) {
+        this.onDetachAction = action;
+    }
+
     // UI State helpers
     public void setQueueActive(boolean active) {
-         if (active) {
-             queueBtn.setStyle("-fx-background-color: #3f3f46; -fx-text-fill: white; -fx-border-color: #3f3f46; -fx-border-radius: 4;");
-         } else {
-             queueBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: #3f3f46; -fx-border-radius: 4;");
-         }
+        if (active) {
+            queueBtn.getStyleClass().add("active");
+            queueBtn.setStyle("-fx-text-fill: white;");
+        } else {
+            queueBtn.getStyleClass().remove("active");
+            queueBtn.setStyle("");
+        }
+    }
+
+    private String formatTime(double seconds) {
+        if (Double.isNaN(seconds) || seconds < 0)
+            return "0:00";
+        int s = (int) seconds;
+        int m = s / 60;
+        s = s % 60;
+        return String.format("%d:%02d", m, s);
     }
 }

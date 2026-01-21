@@ -23,14 +23,14 @@ export default function PlayerLayout() {
   }
 
   return (
-    <div className="flex h-screen w-screen bg-black text-white overflow-hidden font-sans">
+    <div className="flex h-screen w-screen bg-[#121212] text-white overflow-hidden font-sans">
       <Sidebar currentView={view} onChangeView={setView} onTogglePlaylists={() => setShowPlaylistsDropdown(s => !s)} />
 
-      <div className="flex-1 flex flex-col min-w-0 bg-[#0f0f13]">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#18181B]">
         {/* Main Content Area */}
         <div className="flex-1 relative overflow-hidden">
           {/* Gradient Mesh Background */}
-          <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-violet-900/10 to-transparent pointer-events-none" />
+          <div className="absolute top-0 left-0 w-full h-[300px] bg-gradient-to-b from-indigo-900/8 to-transparent pointer-events-none" />
 
           {showPlaylistsDropdown && (
             <PlaylistsDropdown
@@ -46,8 +46,8 @@ export default function PlayerLayout() {
               onNavigate={setView}
             />
           )}
-          {view === 'search' && <div className="p-10 text-zinc-500">Search Coming Soon...</div>}
-          {view === 'queue' && <div className="p-10 text-zinc-500">Queue Visualization Coming Soon...</div>}
+          {view === 'search' && <div className="p-10 text-[#71717A]">Search Coming Soon...</div>}
+          {view === 'queue' && <div className="p-10 text-[#71717A]">Queue Visualization Coming Soon...</div>}
         </div>
 
         {/* Controls */}

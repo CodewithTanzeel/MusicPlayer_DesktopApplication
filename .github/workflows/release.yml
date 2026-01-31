@@ -1,0 +1,45 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: 'maven'
+        
+    - name: Build with Maven
+      run: mvn clean package -DskipTests
+      
+    - name: Package Application (Windows)
+      run: |
+        jpackage `
+          --name "VibeMusic" `
+          --app-version "1.0.0" `
+          --input target `
+          --main-jar vibe-music-player-1.0-SNAPSHOT.jar `
+          --type exe `
+          --win-dir-chooser `
+          --win-shortcut `
+          --win-menu `
+          --win-menu-group "Vibe Music" `
+          --dest dist
+          
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: dist/*.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

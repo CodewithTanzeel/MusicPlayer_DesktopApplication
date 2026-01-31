@@ -340,4 +340,33 @@ public class DatabaseManager {
         }
         return list;
     }
+
+    // --- Settings Persistence ---
+
+    public static String getSetting(String key) {
+        String sql = "SELECT value FROM settings WHERE key = ?";
+        try (Connection conn = DriverManager.getConnection(OB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, key);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("value");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void setSetting(String key, String value) {
+        String sql = "INSERT OR REPLACE INTO settings(key, value) VALUES(?,?)";
+        try (Connection conn = DriverManager.getConnection(OB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, key);
+            pstmt.setString(2, value);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

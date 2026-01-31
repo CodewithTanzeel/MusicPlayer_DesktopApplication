@@ -24,10 +24,19 @@ public class Main extends Application {
         stage.initStyle(StageStyle.UNDECORATED); // Remove OS Window Frame
         stage.setTitle("MusicPlayer");
         
-        // Start with Login
-        LoginScene login = new LoginScene();
-        // We pass the stage to the Scene creator so it can add controls
-        Scene scene = new Scene(login.getView(stage), 1280, 720);
+        String setupCompleted = DatabaseManager.getSetting("setup_completed");
+        Scene scene;
+        
+        if ("true".equals(setupCompleted)) {
+            // Start with Login
+            LoginScene login = new LoginScene();
+            scene = new Scene(login.getView(stage), 1280, 720);
+        } else {
+            // Start with Setup Wizard
+            com.vibe.ui.SetupWizardScene wizard = new com.vibe.ui.SetupWizardScene();
+            scene = new Scene(wizard.getView(stage), 1000, 700);
+        }
+
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         
         stage.setScene(scene);
